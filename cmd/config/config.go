@@ -11,10 +11,11 @@ import (
 var (
 	ApplicationCfg *ApplicationConfig
 	NatsCfg        *NatsConfig
+	RedisCfg       *RedisConfig
 )
 
 const (
-	AppName     = "forfit-Backend"
+	AppName     = "payment-gateway-Backend"
 	AppVersion  = "1.0.0"
 	Development = "development"
 	Staging     = "stage"
@@ -37,6 +38,14 @@ type NatsConfig struct {
 	GamificationTopic string
 }
 
+type RedisConfig struct {
+	Host          string
+	Password      string
+	Db            int
+	MinIddleConns int
+	PoolSize      int
+}
+
 func initialize() {
 	if err := godotenv.Load(); err != nil {
 		log.Print("No .env file found")
@@ -47,6 +56,7 @@ func InitializeConfigs() {
 	initialize()
 	initializeApplicationConfigs()
 	initializeNatsConfigs()
+	initializeRedisConfig()
 }
 
 func getEnv(key string, defaultVal string) string {
@@ -88,6 +98,18 @@ func initializeNatsConfigs() {
 			UserTopic:         getEnv("NATS_USER_TOPIC", "user.events"),
 			WorkoutTopic:      getEnv("NATS_WORKOUT_TOPIC", "workout.events"),
 			GamificationTopic: getEnv("NATS_GAMIFICATION_TOPIC", "gamification.events"),
+		}
+	}
+}
+
+func initializeRedisConfig() {
+	if RedisCfg == nil {
+		RedisCfg = &RedisConfig{
+			Host:          getEnv("REDIS_HOST", "localhost:6379"),
+			Password:      getEnv("REDIS_PASSWORD", "password"),
+			Db:            getEnvAsInt("REDIS_DB", 0),
+			MinIddleConns: getEnvAsInt("REDIS_MIN_IDDLE_CONNS", 1),
+			PoolSize:      getEnvAsInt("REIDS_POOL_SIZE", 5),
 		}
 	}
 }

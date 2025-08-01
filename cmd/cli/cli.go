@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	configs "payment-gateway/cmd/config"
-	app "payment-gateway/internal/application"
 
 	"github.com/spf13/cobra"
 )
@@ -35,7 +34,7 @@ var httpCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		srv := app.NewApplication()
+		srv := NewApplication()
 		if err := srv.Start(fmt.Sprintf(":%d", port)); err != nil {
 			fmt.Fprintf(os.Stderr, "Error initializing application: %v\n", err)
 			os.Exit(1)
