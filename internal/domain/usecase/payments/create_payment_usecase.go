@@ -1,4 +1,4 @@
-package domain_gamification_usecase
+package domain_payment_usecase
 
 import (
 	"context"

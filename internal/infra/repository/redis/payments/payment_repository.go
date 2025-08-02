@@ -4,21 +4,16 @@ import (
 	"context"
 	domain_repository "payment-gateway/internal/domain/repository"
 
-	"go.mongodb.org/mongo-driver/mongo"
+	"github.com/redis/go-redis/v9"
 )
 
 type PaymentsRepository struct {
-	db         *mongo.Database
-	collection *mongo.Collection
+	client *redis.Client
 }
 
-func NewPaymentsRepository(db *mongo.Database) domain_repository.PaymentRepositoryInterface {
-	// collection := db.Collection(configs.MongoCfg.WorkoutCollection)
-	collection := db.Collection("payments")
-
+func NewPaymentsRepository(client *redis.Client) domain_repository.PaymentRepositoryInterface {
 	return &PaymentsRepository{
-		db:         db,
-		collection: collection,
+		client: client,
 	}
 }
 
@@ -27,5 +22,9 @@ func (f *PaymentsRepository) Create(ctx context.Context) error {
 }
 
 func (f *PaymentsRepository) Summary(ctx context.Context) error {
+	return nil
+}
+
+func (f *PaymentsRepository) GetByCorrelationId(ctx context.Context, correlationId string) error {
 	return nil
 }
