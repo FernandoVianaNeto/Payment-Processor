@@ -8,7 +8,8 @@ import (
 )
 
 type Server struct {
-	router *gin.Engine
+	router   *gin.Engine
+	Usecases UseCases
 }
 
 type UseCases struct {
