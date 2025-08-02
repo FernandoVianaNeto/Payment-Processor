@@ -17,7 +17,8 @@ services:
       - "4222:4222"     # Porta padrão para clientes
       - "8222:8222"     # Porta de monitoramento (opcional)
     restart: always
-    command: ["-p", "4222", "-m", "8222", "--user", "root", "--pass", "password"]
+    command: ["-p", "4222", "-m", "8222"]
+    # command: ["-p", "4222", "-m", "8222", "--user", "root", "--pass", "password"]
 
   # payment-gateway1:
   #   build:

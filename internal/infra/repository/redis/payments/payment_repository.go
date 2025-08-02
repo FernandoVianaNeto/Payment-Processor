@@ -28,7 +28,7 @@ func (f *PaymentsRepository) Summary(ctx context.Context) error {
 func (f *PaymentsRepository) AlreadyAdded(ctx context.Context, correlationId string) bool {
 	payment := f.client.Get(ctx, correlationId)
 
-	if payment != nil {
+	if payment.Val() != "" {
 		return true
 	}
 

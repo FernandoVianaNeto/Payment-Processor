@@ -22,7 +22,12 @@ func NewServer(
 ) *Server {
 	router := gin.Default()
 
-	server := &Server{}
+	server := &Server{
+		router: router,
+		Usecases: UseCases{
+			CreatePaymentUsecase: createPaymentUsecase,
+		},
+	}
 	server.router = Routes(router, server)
 
 	return server
