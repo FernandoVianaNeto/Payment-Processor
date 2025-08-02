@@ -30,9 +30,10 @@ type ApplicationConfig struct {
 }
 
 type NatsConfig struct {
-	Host     string
-	User     string
-	Password string
+	Host                 string
+	User                 string
+	Password             string
+	PaymentRequestsQueue string
 }
 
 type RedisConfig struct {
@@ -90,9 +91,10 @@ func initializeApplicationConfigs() {
 func initializeNatsConfigs() {
 	if NatsCfg == nil {
 		NatsCfg = &NatsConfig{
-			Host:     getEnv("NATS_HOST", "nats://localhost:4222"),
-			User:     getEnv("NATS_USER", "root"),
-			Password: getEnv("NATS_PASSWORD", "password"),
+			Host:                 getEnv("NATS_HOST", "nats://localhost:4222"),
+			User:                 getEnv("NATS_USER", "root"),
+			Password:             getEnv("NATS_PASSWORD", "password"),
+			PaymentRequestsQueue: getEnv("NATS_PAYMENT_REQUEST_QUEUE", "payment_requests"),
 		}
 	}
 }

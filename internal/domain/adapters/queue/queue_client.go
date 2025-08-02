@@ -1,4 +1,4 @@
-package messaging
+package queue
 
 type Client interface {
 	Connect() error

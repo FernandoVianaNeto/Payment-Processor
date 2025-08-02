@@ -8,8 +8,8 @@ type Payment struct {
 
 func NewPayment(
 	correlationId string,
-	createdAt string,
 	amount float64,
+	createdAt string,
 ) *Payment {
 	entity := &Payment{
 		CorrelationId: correlationId,

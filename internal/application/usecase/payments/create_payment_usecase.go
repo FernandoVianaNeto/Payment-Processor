@@ -2,21 +2,25 @@ package payment_usecase
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
-	"payment-gateway/internal/domain/adapters/messaging"
+	configs "payment-gateway/cmd/config"
+	"payment-gateway/internal/domain/adapters/queue"
 	"payment-gateway/internal/domain/dto"
+	"payment-gateway/internal/domain/entity"
 	domain_repository "payment-gateway/internal/domain/repository"
 	domain_payment_usecase "payment-gateway/internal/domain/usecase/payments"
+	"time"
 )
 
 type CreatePaymentUsecase struct {
 	PaymentRepository domain_repository.PaymentRepositoryInterface
-	Queue             messaging.Client
+	Queue             queue.Client
 }
 
 func NewCreatePaymentUsecase(
 	paymentRepository domain_repository.PaymentRepositoryInterface,
-	queue messaging.Client,
+	queue queue.Client,
 ) domain_payment_usecase.CreatePaymentUsecaseInterface {
 	return &CreatePaymentUsecase{
 		PaymentRepository: paymentRepository,
@@ -31,5 +35,17 @@ func (u *CreatePaymentUsecase) Execute(ctx context.Context, dto dto.CreatePaymen
 		return errors.New("payment already processed")
 	}
 
-	return nil
+	requestedAt := time.Now().UTC().String()
+
+	message := entity.NewPayment(dto.CorrelationId, dto.Amount, requestedAt)
+
+	messageByte, err := json.Marshal(message)
+
+	if err != nil {
+		return err
+	}
+
+	err = u.Queue.Publish(configs.NatsCfg.PaymentRequestsQueue, messageByte)
+
+	return err
 }
