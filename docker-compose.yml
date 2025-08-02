@@ -1,49 +1,51 @@
 version: '3.8'
 
 services:
-  # Redis for message brokering and storage
   redis:
     image: redis:7
     container_name: redis
+    env_file:
+      - .env
     ports:
       - "6379:6379"
     restart: always
 
-  # Backend App Instance 1
-  app1:
+  payment-gateway1:
     build:
-      context: ./app
-    container_name: backend-app-1
-    environment:
-      - REDIS_HOST=redis
+      context: .
+      dockerfile: .setup/build/Dockerfile
+    container_name: payment-gateway-1
+    env_file:
+      - .env
     depends_on:
       - redis
     restart: always
+    command: ["/bin/application", "http"]
 
-  # Backend App Instance 2
-  app2:
+  payment-gateway2:
     build:
-      context: ./app
-    container_name: backend-app-2
-    environment:
-      - REDIS_HOST=redis
+      context: .
+      dockerfile: .setup/build/Dockerfile
+    container_name: payment-gateway-2
+    env_file:
+      - .env
     depends_on:
       - redis
     restart: always
+    command: ["/bin/application", "http"]
 
-  # NGINX Load Balancer
   nginx:
     image: nginx:alpine
     container_name: nginx-loadbalancer
     ports:
-      - "80:80"
+      - "3000:80"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./.setup/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - app1
-      - app2
+      - payment-gateway1
+      - payment-gateway2
     restart: always
 
-networks:
-  default:
-    name: app-network
+# networks:
+#   default:
+#     name: app-network
