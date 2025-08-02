@@ -6,10 +6,10 @@ import (
 
 func Routes(engine *gin.Engine, server *Server) *gin.Engine {
 	{
-		payments := engine.Group("/payments")
+		payments := engine.Group("/")
 		{
-			payments.POST("/", server.PaymentsHandler)
-			payments.GET("/summary", server.GetSummaryHandler)
+			payments.POST("/payments", server.PaymentsHandler)
+			payments.GET("/payments-summary", server.GetSummaryHandler)
 		}
 	}
 

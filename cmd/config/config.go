@@ -11,10 +11,11 @@ import (
 var (
 	ApplicationCfg *ApplicationConfig
 	NatsCfg        *NatsConfig
+	RedisCfg       *RedisConfig
 )
 
 const (
-	AppName     = "forfit-Backend"
+	AppName     = "payment-gateway-Backend"
 	AppVersion  = "1.0.0"
 	Development = "development"
 	Staging     = "stage"
@@ -29,12 +30,18 @@ type ApplicationConfig struct {
 }
 
 type NatsConfig struct {
-	Host              string
-	User              string
-	Password          string
-	WorkoutTopic      string
-	UserTopic         string
-	GamificationTopic string
+	Host     string
+	User     string
+	Password string
+}
+
+type RedisConfig struct {
+	Host          string
+	Port          int
+	Password      string
+	Db            int
+	MinIddleConns int
+	PoolSize      int
 }
 
 func initialize() {
@@ -47,6 +54,7 @@ func InitializeConfigs() {
 	initialize()
 	initializeApplicationConfigs()
 	initializeNatsConfigs()
+	initializeRedisConfig()
 }
 
 func getEnv(key string, defaultVal string) string {
@@ -82,12 +90,22 @@ func initializeApplicationConfigs() {
 func initializeNatsConfigs() {
 	if NatsCfg == nil {
 		NatsCfg = &NatsConfig{
-			Host:              getEnv("NATS_HOST", "nats://localhost:4222"),
-			User:              getEnv("NATS_USER", "root"),
-			Password:          getEnv("NATS_PASSWORD", "password"),
-			UserTopic:         getEnv("NATS_USER_TOPIC", "user.events"),
-			WorkoutTopic:      getEnv("NATS_WORKOUT_TOPIC", "workout.events"),
-			GamificationTopic: getEnv("NATS_GAMIFICATION_TOPIC", "gamification.events"),
+			Host:     getEnv("NATS_HOST", "nats://localhost:4222"),
+			User:     getEnv("NATS_USER", "root"),
+			Password: getEnv("NATS_PASSWORD", "password"),
+		}
+	}
+}
+
+func initializeRedisConfig() {
+	if RedisCfg == nil {
+		RedisCfg = &RedisConfig{
+			Host:          getEnv("REDIS_HOST", "redis"),
+			Port:          getEnvAsInt("REDIS_PORT", 6379),
+			Password:      getEnv("REDIS_PASSWORD", "password"),
+			Db:            getEnvAsInt("REDIS_DB", 0),
+			MinIddleConns: getEnvAsInt("REDIS_MIN_IDDLE_CONNS", 1),
+			PoolSize:      getEnvAsInt("REDIS_POOL_SIZE", 5),
 		}
 	}
 }
