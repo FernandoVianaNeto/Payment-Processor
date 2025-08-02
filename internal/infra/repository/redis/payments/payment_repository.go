@@ -25,6 +25,12 @@ func (f *PaymentsRepository) Summary(ctx context.Context) error {
 	return nil
 }
 
-func (f *PaymentsRepository) GetByCorrelationId(ctx context.Context, correlationId string) error {
-	return nil
+func (f *PaymentsRepository) AlreadyAdded(ctx context.Context, correlationId string) bool {
+	payment := f.client.Get(ctx, correlationId)
+
+	if payment != nil {
+		return true
+	}
+
+	return false
 }

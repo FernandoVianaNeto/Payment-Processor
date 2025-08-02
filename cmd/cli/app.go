@@ -29,14 +29,14 @@ type Repositories struct {
 func NewApplication() *web.Server {
 	ctx := context.Background()
 
-	eventClient := natsclient.New(configs.NatsCfg.Host)
-	eventClient.Connect()
+	queueClient := natsclient.New(configs.NatsCfg.Host)
+	queueClient.Connect()
 
 	redisClient := redis_client.InitRedis()
 
 	repositories := NewRepositories(ctx, redisClient)
 
-	usecases := NewUseCases(ctx, repositories.PaymentsRepository)
+	usecases := NewUseCases(ctx, repositories.PaymentsRepository, queueClient)
 
 	srv := web.NewServer(
 		ctx,
@@ -60,8 +60,9 @@ func NewRepositories(
 func NewUseCases(
 	ctx context.Context,
 	paymentRepository domain_repository.PaymentRepositoryInterface,
+	queue *natsclient.NatsClient,
 ) UseCases {
-	createPaymentUsecase := payment_usecase.NewCreatePaymentUsecase(paymentRepository)
+	createPaymentUsecase := payment_usecase.NewCreatePaymentUsecase(paymentRepository, queue)
 
 	return UseCases{
 		CreatePaymentUsecase: createPaymentUsecase,
