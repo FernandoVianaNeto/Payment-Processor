@@ -3,7 +3,6 @@ package payment_usecase
 import (
 	"context"
 	"payment-gateway/internal/domain/adapters/processors"
-	"payment-gateway/internal/domain/dto"
 	domain_repository "payment-gateway/internal/domain/repository"
 	domain_payment_usecase "payment-gateway/internal/domain/usecase/payments"
 )
@@ -26,6 +25,6 @@ func NewProcessPaymentRequestUsecase(
 	}
 }
 
-func (u *ProcessPaymentRequestUsecase) Execute(ctx context.Context, dto dto.ProcessPaymentRequestDto) error {
+func (u *ProcessPaymentRequestUsecase) Execute(ctx context.Context, data []byte) error {
 	return nil
 }
