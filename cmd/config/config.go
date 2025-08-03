@@ -9,9 +9,11 @@ import (
 )
 
 var (
-	ApplicationCfg *ApplicationConfig
-	NatsCfg        *NatsConfig
-	RedisCfg       *RedisConfig
+	ApplicationCfg                    *ApplicationConfig
+	NatsCfg                           *NatsConfig
+	RedisCfg                          *RedisConfig
+	PaymentProcessorDefaultClientCfg  *PaymentProcessorClientConfig
+	PaymentProcessorFallbackClientCfg *PaymentProcessorClientConfig
 )
 
 const (
@@ -45,6 +47,10 @@ type RedisConfig struct {
 	PoolSize      int
 }
 
+type PaymentProcessorClientConfig struct {
+	BaseUri string
+}
+
 func initialize() {
 	if err := godotenv.Load(); err != nil {
 		log.Print("No .env file found")
@@ -56,6 +62,7 @@ func InitializeConfigs() {
 	initializeApplicationConfigs()
 	initializeNatsConfigs()
 	initializeRedisConfig()
+	initializeProcessorsPayment()
 }
 
 func getEnv(key string, defaultVal string) string {
@@ -108,6 +115,20 @@ func initializeRedisConfig() {
 			Db:            getEnvAsInt("REDIS_DB", 0),
 			MinIddleConns: getEnvAsInt("REDIS_MIN_IDDLE_CONNS", 1),
 			PoolSize:      getEnvAsInt("REDIS_POOL_SIZE", 5),
+		}
+	}
+}
+
+func initializeProcessorsPayment() {
+	if PaymentProcessorDefaultClientCfg == nil {
+		PaymentProcessorDefaultClientCfg = &PaymentProcessorClientConfig{
+			BaseUri: getEnv("PROCESSOR_DEFAULT", "http://payment-processor-default:8080"),
+		}
+	}
+
+	if PaymentProcessorFallbackClientCfg == nil {
+		PaymentProcessorFallbackClientCfg = &PaymentProcessorClientConfig{
+			BaseUri: getEnv("PROCESSOR_FALLBACK", "http://payment-processor-fallback:8080"),
 		}
 	}
 }

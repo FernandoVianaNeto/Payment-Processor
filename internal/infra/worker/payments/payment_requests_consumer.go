@@ -5,9 +5,10 @@ import (
 	"log"
 	configs "payment-gateway/cmd/config"
 	"payment-gateway/internal/domain/adapters/queue"
+	http_client "payment-gateway/pkg/client/http"
 )
 
-func StartPaymentRequestsConsumer(ctx context.Context, client queue.Client, consumerName string) error {
+func StartPaymentRequestsConsumer(ctx context.Context, client queue.Client, consumerName string, processorsClient http_client.HTTPClient) error {
 	err := client.Subscribe(configs.NatsCfg.PaymentRequestsQueue, func(msg []byte) {
 		log.Printf("[consumer1] Mensagem recieved: %s\n", string(msg))
 		// Processar mensagem aqui
