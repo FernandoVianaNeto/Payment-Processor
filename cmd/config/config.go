@@ -122,13 +122,13 @@ func initializeRedisConfig() {
 func initializeProcessorsPayment() {
 	if PaymentProcessorDefaultClientCfg == nil {
 		PaymentProcessorDefaultClientCfg = &PaymentProcessorClientConfig{
-			BaseUri: getEnv("PROCESSOR_DEFAULT", "http://payment-processor-default:8080"),
+			BaseUri: getEnv("PROCESSOR_DEFAULT_BASE_URI", "http://127.0.0.1:8001"),
 		}
 	}
 
 	if PaymentProcessorFallbackClientCfg == nil {
 		PaymentProcessorFallbackClientCfg = &PaymentProcessorClientConfig{
-			BaseUri: getEnv("PROCESSOR_FALLBACK", "http://payment-processor-fallback:8080"),
+			BaseUri: getEnv("PROCESSOR_FALLBACK_BASE_URI", "http://127.0.0.1:8002"),
 		}
 	}
 }

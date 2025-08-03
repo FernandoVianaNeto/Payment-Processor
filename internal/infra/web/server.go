@@ -13,12 +13,12 @@ type Server struct {
 }
 
 type UseCases struct {
-	CreatePaymentUsecase domain_payment_usecase.CreatePaymentUsecaseInterface
+	CreatePaymentUsecase domain_payment_usecase.CreatePaymentRequestUsecaseInterface
 }
 
 func NewServer(
 	ctx context.Context,
-	createPaymentUsecase domain_payment_usecase.CreatePaymentUsecaseInterface,
+	createPaymentUsecase domain_payment_usecase.CreatePaymentRequestUsecaseInterface,
 ) *Server {
 	router := gin.Default()
 

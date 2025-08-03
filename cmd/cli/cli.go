@@ -3,11 +3,9 @@ package cli
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"os"
 	configs "payment-gateway/cmd/config"
 	payment_request_queue_consumer "payment-gateway/internal/infra/worker/payments"
-	http_client "payment-gateway/pkg/client/http"
 	natsclient "payment-gateway/pkg/nats"
 
 	"github.com/spf13/cobra"
@@ -60,13 +58,14 @@ var paymentRequestsConsumerCmd = &cobra.Command{
 		natsClient := natsclient.New(configs.NatsCfg.Host)
 		natsClient.Connect()
 
-		paymentProcessorDefault := http_client.NewBaseClient(
-			configs.PaymentProcessorDefaultClientCfg.BaseUri,
-			http.DefaultClient,
-			configs.ApplicationCfg,
-		)
+		workerInfra := NewWorker()
 
-		err := payment_request_queue_consumer.StartPaymentRequestsConsumer(ctx, natsClient, "payment_requests_consumer", paymentProcessorDefault)
+		err := payment_request_queue_consumer.StartPaymentRequestsConsumer(ctx, natsClient, "payment_requests_consumer", payment_request_queue_consumer.ConsumerInfra{
+			ProcessorPaymentDefault:  workerInfra.ProcessorPaymentDefault,
+			ProcessorPaymentFallback: workerInfra.ProcessorPaymentFallback,
+			PaymentRepository:        workerInfra.PaymentRepository,
+			Usecases:                 payment_request_queue_consumer.Usecases(workerInfra.Usecases),
+		})
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to start payment_requests_consumer: %v\n", err)
