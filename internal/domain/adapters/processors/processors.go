@@ -1,6 +1,9 @@
 package processors
 
-import "context"
+import (
+	"context"
+	domain_response "payment-gateway/internal/domain/response"
+)
 
 type ProcessorClientInput struct {
 	CorrelationId string  `json:"correlationId"`
@@ -10,5 +13,5 @@ type ProcessorClientInput struct {
 
 type ProcessorsClientInterface interface {
 	ExecutePayment(ctx context.Context, input ProcessorClientInput) error
-	HealthCheck(ctx context.Context) error
+	IsLive(ctx context.Context) (*domain_response.HealthCheckResponse, error)
 }

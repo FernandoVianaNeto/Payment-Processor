@@ -7,6 +7,7 @@ import (
 	configs "payment-gateway/cmd/config"
 	payment_usecase "payment-gateway/internal/application/usecase/payments"
 	domain_processors "payment-gateway/internal/domain/adapters/processors"
+	"payment-gateway/internal/domain/adapters/queue"
 	domain_repository "payment-gateway/internal/domain/repository"
 	domain_payment_usecase "payment-gateway/internal/domain/usecase/payments"
 	"payment-gateway/internal/infra/adapter/processors"
@@ -56,7 +57,7 @@ func NewWorker() ConsumerInfra {
 
 	adapters := NewWorkerAdapters(repositories.PaymentsRepository)
 
-	usecases := NewWorkerUseCases(ctx, repositories.PaymentsRepository, adapters.ProcessorPaymentDefault, adapters.ProcessorPaymentFallback)
+	usecases := NewWorkerUseCases(ctx, repositories.PaymentsRepository, adapters.ProcessorPaymentDefault, adapters.ProcessorPaymentFallback, queueClient)
 
 	return ConsumerInfra{
 		ProcessorPaymentDefault:  adapters.ProcessorPaymentDefault,
@@ -106,8 +107,9 @@ func NewWorkerUseCases(
 	paymentRepository domain_repository.PaymentRepositoryInterface,
 	processPaymentDefaultAdapter domain_processors.ProcessorsClientInterface,
 	processPaymentFallbackAdapter domain_processors.ProcessorsClientInterface,
+	queue queue.Client,
 ) WorkerUseCases {
-	processPaymentRequestUsecase := payment_usecase.NewProcessPaymentRequestUsecase(paymentRepository, processPaymentDefaultAdapter, processPaymentFallbackAdapter)
+	processPaymentRequestUsecase := payment_usecase.NewProcessPaymentRequestUsecase(paymentRepository, processPaymentDefaultAdapter, processPaymentFallbackAdapter, queue)
 
 	return WorkerUseCases{
 		ProcessPaymentRequestUsecase: processPaymentRequestUsecase,

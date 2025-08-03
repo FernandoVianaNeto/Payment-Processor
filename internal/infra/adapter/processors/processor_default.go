@@ -2,8 +2,12 @@ package processors
 
 import (
 	"context"
+	"encoding/json"
+	"net/http"
+	"net/url"
 	"payment-gateway/internal/domain/adapters/processors"
 	domain_repository "payment-gateway/internal/domain/repository"
+	domain_response "payment-gateway/internal/domain/response"
 	http_client "payment-gateway/pkg/client/http"
 )
 
@@ -46,6 +50,20 @@ func (u *ProcessorDefaultClient) ExecutePayment(ctx context.Context, input proce
 	return nil
 }
 
-func (u *ProcessorDefaultClient) HealthCheck(ctx context.Context) error {
-	return nil
+func (u *ProcessorDefaultClient) IsLive(ctx context.Context) (*domain_response.HealthCheckResponse, error) {
+	var response domain_response.HealthCheckResponse
+
+	responseByte, statusCode, err := u.Client.Get(ctx, "/payment/service-health", url.Values{})
+
+	if err != nil || statusCode != http.StatusOK {
+		return nil, err
+	}
+
+	err = json.Unmarshal(responseByte, &response)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &response, err
 }
