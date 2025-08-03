@@ -3,6 +3,8 @@ package processors
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"payment-gateway/internal/domain/adapters/processors"
@@ -27,33 +29,25 @@ func NewProcessorDefaultClient(
 }
 
 func (u *ProcessorDefaultClient) ExecutePayment(ctx context.Context, input processors.ProcessorClientInput) error {
-	// paymentAlreadyProcessed := u.PaymentRepository.AlreadyAdded(ctx, dto.CorrelationId)
+	body, err := json.Marshal(input)
 
-	// if paymentAlreadyProcessed {
-	// 	return errors.New("payment already processed")
-	// }
+	if err != nil {
+		return err
+	}
 
-	// requestedAt := time.Now().UTC().String()
+	_, statusCode, err := u.Client.Post(ctx, "/payments", url.Values{}, body)
 
-	// message := entity.NewPayment(dto.CorrelationId, dto.Amount, requestedAt)
+	if statusCode != http.StatusOK || err != nil {
+		return errors.New(fmt.Sprintf("error processing payment: %s", err))
+	}
 
-	// messageByte, err := json.Marshal(message)
-
-	// if err != nil {
-	// 	return err
-	// }
-
-	// err = u.Queue.Publish(configs.NatsCfg.PaymentRequestsQueue, messageByte)
-
-	// return err
-
-	return nil
+	return err
 }
 
 func (u *ProcessorDefaultClient) IsLive(ctx context.Context) (*domain_response.HealthCheckResponse, error) {
 	var response domain_response.HealthCheckResponse
 
-	responseByte, statusCode, err := u.Client.Get(ctx, "/payment/service-health", url.Values{})
+	responseByte, statusCode, err := u.Client.Get(ctx, "/payments/service-health", url.Values{})
 
 	if err != nil || statusCode != http.StatusOK {
 		return nil, err
