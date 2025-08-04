@@ -20,6 +20,12 @@ services:
     command: ["-p", "4222", "-m", "8222"]
     # command: ["-p", "4222", "-m", "8222", "--user", "root", "--pass", "password"]
 
+  mongo-db:
+    image: mongo
+    container_name: "payment-gateway-mongo"
+    ports:
+      - "27017:27017"
+
   # payment-gateway1:
   #   build:
   #     context: .

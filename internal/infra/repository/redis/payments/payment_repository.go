@@ -2,8 +2,11 @@ package redis_payment_repository
 
 import (
 	"context"
+	"encoding/json"
 	"payment-gateway/internal/domain/dto"
+	"payment-gateway/internal/domain/entity"
 	domain_repository "payment-gateway/internal/domain/repository"
+	domain_response "payment-gateway/internal/domain/response"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -19,13 +22,13 @@ func NewPaymentsRepository(client *redis.Client) domain_repository.PaymentReposi
 }
 
 func (f *PaymentsRepository) Create(ctx context.Context, input dto.CreatePaymentDto) error {
-	response := f.client.Set(ctx, input.CorrelationId, input.Amount, 0)
+	entity := entity.NewPayment(input.CorrelationId, input.Amount, input.RequestedAt)
+
+	entityEncoded, _ := json.Marshal(entity)
+
+	response := f.client.Set(ctx, input.CorrelationId, entityEncoded, 0)
 
 	return response.Err()
-}
-
-func (f *PaymentsRepository) Summary(ctx context.Context) error {
-	return nil
 }
 
 func (f *PaymentsRepository) AlreadyAdded(ctx context.Context, correlationId string) bool {
@@ -36,4 +39,8 @@ func (f *PaymentsRepository) AlreadyAdded(ctx context.Context, correlationId str
 	}
 
 	return false
+}
+
+func (f *PaymentsRepository) Summary(ctx context.Context, input dto.GetPaymentsSummaryDto) (*domain_response.PaymentSummaryResponse, error) {
+	return nil, nil
 }
