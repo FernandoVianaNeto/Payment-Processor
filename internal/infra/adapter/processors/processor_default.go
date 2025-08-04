@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 	"payment-gateway/internal/domain/adapters/processors"
@@ -38,7 +37,7 @@ func (u *ProcessorDefaultClient) ExecutePayment(ctx context.Context, input proce
 	_, statusCode, err := u.Client.Post(ctx, "/payments", url.Values{}, body)
 
 	if statusCode != http.StatusOK || err != nil {
-		return errors.New(fmt.Sprintf("error processing payment: %s", err))
+		return errors.New("error processing payment")
 	}
 
 	return err

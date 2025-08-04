@@ -80,6 +80,9 @@ func NewWorkerAdapters(
 		configs.PaymentProcessorFallbackClientCfg.BaseUri,
 		http.DefaultClient,
 		configs.ApplicationCfg,
+		http_client.OptionalHeaders{
+			Key: "Content-Type", Value: "application/json",
+		},
 	)
 
 	paymentProcessorDefaultAdapter := processors.NewProcessorDefaultClient(paymentProcessorDefaultClient, paymentRepository)

@@ -35,7 +35,8 @@ func (u *CreatePaymentRequestUsecase) Execute(ctx context.Context, dto dto.Creat
 		return errors.New("payment already processed")
 	}
 
-	requestedAt := time.Now().UTC().String()
+	now := time.Now().UTC()
+	requestedAt := now.Format(time.RFC3339)
 
 	message := entity.NewPayment(dto.CorrelationId, dto.Amount, requestedAt)
 
