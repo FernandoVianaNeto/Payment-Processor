@@ -11,12 +11,12 @@ import (
 	domain_repository "payment-gateway/internal/domain/repository"
 	domain_payment_usecase "payment-gateway/internal/domain/usecase/payments"
 	"payment-gateway/internal/infra/adapter/processors"
-	redis_payment_repository "payment-gateway/internal/infra/repository/redis/payments"
+	mongo_infra "payment-gateway/internal/infra/repository/mongo"
 	http_client "payment-gateway/pkg/client/http"
+	mongoPkg "payment-gateway/pkg/mongo"
 	natsclient "payment-gateway/pkg/nats"
-	redis_client "payment-gateway/pkg/redis"
 
-	"github.com/redis/go-redis/v9"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Worker struct {
@@ -35,9 +35,6 @@ type WorkerAdapters struct {
 	ProcessorPaymentFallback domain_processors.ProcessorsClientInterface
 }
 
-type WorkerInfrastructure struct {
-}
-
 type ConsumerInfra struct {
 	ProcessorPaymentDefault  domain_processors.ProcessorsClientInterface
 	ProcessorPaymentFallback domain_processors.ProcessorsClientInterface
@@ -51,9 +48,16 @@ func NewWorker() ConsumerInfra {
 	queueClient := natsclient.New(configs.NatsCfg.Host)
 	queueClient.Connect()
 
-	redisClient := redis_client.InitRedis()
+	// redisClient := redis_client.InitRedis()
 
-	repositories := NewWorkerRepositories(ctx, redisClient)
+	mongoConnectionInput := mongoPkg.MongoInput{
+		DSN:      configs.MongoCfg.Dsn,
+		Database: configs.MongoCfg.Database,
+	}
+
+	db := mongoPkg.NewMongoDatabase(ctx, mongoConnectionInput)
+
+	repositories := NewWorkerRepositories(ctx, db)
 
 	adapters := NewWorkerAdapters(repositories.PaymentsRepository)
 
@@ -96,9 +100,10 @@ func NewWorkerAdapters(
 
 func NewWorkerRepositories(
 	ctx context.Context,
-	redisClient *redis.Client,
+	// redisClient *redis.Client,
+	db *mongo.Database,
 ) Repositories {
-	paymentsRepository := redis_payment_repository.NewPaymentsRepository(redisClient)
+	paymentsRepository := mongo_infra.NewPaymentRepository(db)
 
 	return Repositories{
 		PaymentsRepository: paymentsRepository,

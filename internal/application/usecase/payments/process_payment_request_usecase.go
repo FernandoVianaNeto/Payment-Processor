@@ -90,8 +90,10 @@ func (u *ProcessPaymentRequestUsecase) processDefaultMessage(ctx context.Context
 	}
 
 	err = u.PaymentRepository.Create(ctx, dto.CreatePaymentDto{
-		CorrelationId: message.CorrelationId,
-		Amount:        message.Amount,
+		CorrelationId:        message.CorrelationId,
+		Amount:               message.Amount,
+		RequestedAt:          message.RequestedAt,
+		TransactionProcessor: "default",
 	})
 
 	if err != nil {
@@ -133,9 +135,10 @@ func (u *ProcessPaymentRequestUsecase) processFallbackMessage(ctx context.Contex
 	}
 
 	err = u.PaymentRepository.Create(ctx, dto.CreatePaymentDto{
-		CorrelationId: message.CorrelationId,
-		Amount:        message.Amount,
-		RequestedAt:   message.RequestedAt,
+		CorrelationId:        message.CorrelationId,
+		Amount:               message.Amount,
+		RequestedAt:          message.RequestedAt,
+		TransactionProcessor: "fallback",
 	})
 
 	if err != nil {

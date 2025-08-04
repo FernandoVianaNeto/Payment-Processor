@@ -130,7 +130,7 @@ func initializeRedisConfig() {
 func initializeMongoConfig() {
 	if MongoCfg == nil {
 		MongoCfg = &MongoConfig{
-			PaymentCollection: getEnv("MONGO_DB", "payment-gateway"),
+			PaymentCollection: getEnv("MONGO_PAYMENT_COLLECTION", "payment-gateway"),
 			Dsn:               getEnv("MONGO_DSN", ""),
 			Database:          getEnv("MONGO_DATABASE", "payment-gateway"),
 		}

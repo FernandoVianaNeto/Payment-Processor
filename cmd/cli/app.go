@@ -7,12 +7,12 @@ import (
 	payment_usecase "payment-gateway/internal/application/usecase/payments"
 	domain_repository "payment-gateway/internal/domain/repository"
 	domain_payment_usecase "payment-gateway/internal/domain/usecase/payments"
-	redis_payment_repository "payment-gateway/internal/infra/repository/redis/payments"
+	mongo_infra "payment-gateway/internal/infra/repository/mongo"
 	"payment-gateway/internal/infra/web"
+	mongoPkg "payment-gateway/pkg/mongo"
 	natsclient "payment-gateway/pkg/nats"
-	redis_client "payment-gateway/pkg/redis"
 
-	"github.com/redis/go-redis/v9"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Application struct {
@@ -32,9 +32,16 @@ func NewApplication() *web.Server {
 	queueClient := natsclient.New(configs.NatsCfg.Host)
 	queueClient.Connect()
 
-	redisClient := redis_client.InitRedis()
+	// redisClient := redis_client.InitRedis()
 
-	repositories := NewRepositories(ctx, redisClient)
+	mongoConnectionInput := mongoPkg.MongoInput{
+		DSN:      configs.MongoCfg.Dsn,
+		Database: configs.MongoCfg.Database,
+	}
+
+	db := mongoPkg.NewMongoDatabase(ctx, mongoConnectionInput)
+
+	repositories := NewRepositories(ctx, db)
 
 	usecases := NewUseCases(ctx, repositories.PaymentsRepository, queueClient)
 
@@ -48,9 +55,9 @@ func NewApplication() *web.Server {
 
 func NewRepositories(
 	ctx context.Context,
-	redisClient *redis.Client,
+	db *mongo.Database,
 ) Repositories {
-	paymentsRepository := redis_payment_repository.NewPaymentsRepository(redisClient)
+	paymentsRepository := mongo_infra.NewPaymentRepository(db)
 
 	return Repositories{
 		PaymentsRepository: paymentsRepository,

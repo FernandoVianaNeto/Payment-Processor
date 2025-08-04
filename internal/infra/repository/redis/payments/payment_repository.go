@@ -6,6 +6,7 @@ import (
 	"payment-gateway/internal/domain/dto"
 	"payment-gateway/internal/domain/entity"
 	domain_repository "payment-gateway/internal/domain/repository"
+	domain_response "payment-gateway/internal/domain/response"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -30,10 +31,6 @@ func (f *PaymentsRepository) Create(ctx context.Context, input dto.CreatePayment
 	return response.Err()
 }
 
-func (f *PaymentsRepository) Summary(ctx context.Context) error {
-	return nil
-}
-
 func (f *PaymentsRepository) AlreadyAdded(ctx context.Context, correlationId string) bool {
 	payment := f.client.Get(ctx, correlationId)
 
@@ -42,4 +39,8 @@ func (f *PaymentsRepository) AlreadyAdded(ctx context.Context, correlationId str
 	}
 
 	return false
+}
+
+func (f *PaymentsRepository) Summary(ctx context.Context, input dto.GetPaymentsSummaryDto) (*domain_response.PaymentSummaryResponse, error) {
+	return nil, nil
 }
