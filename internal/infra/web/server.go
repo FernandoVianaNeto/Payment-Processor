@@ -8,11 +8,7 @@ import (
 )
 
 type Server struct {
-	router   *gin.Engine
-	Usecases UseCases
-}
-
-type UseCases struct {
+	router                    *gin.Engine
 	CreatePaymentUsecase      domain_payment_usecase.CreatePaymentRequestUsecaseInterface
 	GetPaymentsSummaryUsecase domain_payment_usecase.GetPaymentsSummaryUsecaseInterface
 }
@@ -25,11 +21,9 @@ func NewServer(
 	router := gin.Default()
 
 	server := &Server{
-		router: router,
-		Usecases: UseCases{
-			CreatePaymentUsecase:      createPaymentUsecase,
-			GetPaymentsSummaryUsecase: getPaymentsSummaryUsecase,
-		},
+		router:                    router,
+		CreatePaymentUsecase:      createPaymentUsecase,
+		GetPaymentsSummaryUsecase: getPaymentsSummaryUsecase,
 	}
 	server.router = Routes(router, server)
 

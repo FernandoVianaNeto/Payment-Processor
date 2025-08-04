@@ -39,6 +39,7 @@ type ConsumerInfra struct {
 	ProcessorPaymentDefault  domain_processors.ProcessorsClientInterface
 	ProcessorPaymentFallback domain_processors.ProcessorsClientInterface
 	PaymentRepository        domain_repository.PaymentRepositoryInterface
+	Queue                    *natsclient.NatsClient
 	Usecases                 WorkerUseCases
 }
 
@@ -67,6 +68,7 @@ func NewWorker() ConsumerInfra {
 		ProcessorPaymentDefault:  adapters.ProcessorPaymentDefault,
 		ProcessorPaymentFallback: adapters.ProcessorPaymentFallback,
 		PaymentRepository:        repositories.PaymentsRepository,
+		Queue:                    queueClient,
 		Usecases:                 usecases,
 	}
 }

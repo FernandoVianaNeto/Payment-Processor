@@ -68,7 +68,7 @@ func InitializeConfigs() {
 	initialize()
 	initializeApplicationConfigs()
 	initializeNatsConfigs()
-	initializeRedisConfig()
+	// initializeRedisConfig()
 	initializeProcessorsPayment()
 	initializeMongoConfig()
 }
@@ -98,7 +98,7 @@ func initializeApplicationConfigs() {
 		ApplicationCfg = &ApplicationConfig{
 			Env:        getEnv("APP_ENV", "local"),
 			AppVersion: AppVersion,
-			AppPort:    getEnvAsInt("APP_PORT", 3001),
+			AppPort:    getEnvAsInt("APP_PORT", 8080),
 		}
 	}
 }
@@ -106,32 +106,32 @@ func initializeApplicationConfigs() {
 func initializeNatsConfigs() {
 	if NatsCfg == nil {
 		NatsCfg = &NatsConfig{
-			Host:                 getEnv("NATS_HOST", "nats://localhost:4222"),
-			User:                 getEnv("NATS_USER", "root"),
-			Password:             getEnv("NATS_PASSWORD", "password"),
+			Host:                 getEnv("NATS_HOST", "nats://nats:4222"),
+			User:                 getEnv("NATS_USER", ""),
+			Password:             getEnv("NATS_PASSWORD", ""),
 			PaymentRequestsQueue: getEnv("NATS_PAYMENT_REQUEST_QUEUE", "payment_requests"),
 		}
 	}
 }
 
-func initializeRedisConfig() {
-	if RedisCfg == nil {
-		RedisCfg = &RedisConfig{
-			Host:          getEnv("REDIS_HOST", "redis"),
-			Port:          getEnvAsInt("REDIS_PORT", 6379),
-			Password:      getEnv("REDIS_PASSWORD", "password"),
-			Db:            getEnvAsInt("REDIS_DB", 0),
-			MinIddleConns: getEnvAsInt("REDIS_MIN_IDDLE_CONNS", 1),
-			PoolSize:      getEnvAsInt("REDIS_POOL_SIZE", 5),
-		}
-	}
-}
+// func initializeRedisConfig() {
+// 	if RedisCfg == nil {
+// 		RedisCfg = &RedisConfig{
+// 			Host:          getEnv("REDIS_HOST", "redis"),
+// 			Port:          getEnvAsInt("REDIS_PORT", 6379),
+// 			Password:      getEnv("REDIS_PASSWORD", "password"),
+// 			Db:            getEnvAsInt("REDIS_DB", 0),
+// 			MinIddleConns: getEnvAsInt("REDIS_MIN_IDDLE_CONNS", 1),
+// 			PoolSize:      getEnvAsInt("REDIS_POOL_SIZE", 5),
+// 		}
+// 	}
+// }
 
 func initializeMongoConfig() {
 	if MongoCfg == nil {
 		MongoCfg = &MongoConfig{
 			PaymentCollection: getEnv("MONGO_PAYMENT_COLLECTION", "payment-gateway"),
-			Dsn:               getEnv("MONGO_DSN", ""),
+			Dsn:               getEnv("MONGO_DSN", "mongodb://mongo-db:27017"),
 			Database:          getEnv("MONGO_DATABASE", "payment-gateway"),
 		}
 	}
