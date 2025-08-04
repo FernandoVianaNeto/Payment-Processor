@@ -14,6 +14,7 @@ var (
 	RedisCfg                          *RedisConfig
 	PaymentProcessorDefaultClientCfg  *PaymentProcessorClientConfig
 	PaymentProcessorFallbackClientCfg *PaymentProcessorClientConfig
+	MongoCfg                          *MongoConfig
 )
 
 const (
@@ -47,6 +48,12 @@ type RedisConfig struct {
 	PoolSize      int
 }
 
+type MongoConfig struct {
+	PaymentCollection string
+	Dsn               string
+	Database          string
+}
+
 type PaymentProcessorClientConfig struct {
 	BaseUri string
 }
@@ -63,6 +70,7 @@ func InitializeConfigs() {
 	initializeNatsConfigs()
 	initializeRedisConfig()
 	initializeProcessorsPayment()
+	initializeMongoConfig()
 }
 
 func getEnv(key string, defaultVal string) string {
@@ -115,6 +123,16 @@ func initializeRedisConfig() {
 			Db:            getEnvAsInt("REDIS_DB", 0),
 			MinIddleConns: getEnvAsInt("REDIS_MIN_IDDLE_CONNS", 1),
 			PoolSize:      getEnvAsInt("REDIS_POOL_SIZE", 5),
+		}
+	}
+}
+
+func initializeMongoConfig() {
+	if MongoCfg == nil {
+		MongoCfg = &MongoConfig{
+			PaymentCollection: getEnv("MONGO_DB", "payment-gateway"),
+			Dsn:               getEnv("MONGO_DSN", ""),
+			Database:          getEnv("MONGO_DATABASE", "payment-gateway"),
 		}
 	}
 }

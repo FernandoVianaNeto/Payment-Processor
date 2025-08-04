@@ -57,6 +57,8 @@ func (u *ProcessPaymentRequestUsecase) Execute(ctx context.Context, data []byte)
 }
 
 func (u *ProcessPaymentRequestUsecase) processDefaultMessage(ctx context.Context, message dto.ProcessPaymentRequestDto) error {
+	log.Println("PROCESSING DEFAULT MESSAGE WITH CORRELATION ID: ", message.CorrelationId)
+
 	defaultHealthCheckResponse, err := u.ProcessPaymentDefaultAdapter.IsLive(ctx)
 
 	err = u.failHealthCheck(defaultHealthCheckResponse, err, message)
@@ -133,6 +135,7 @@ func (u *ProcessPaymentRequestUsecase) processFallbackMessage(ctx context.Contex
 	err = u.PaymentRepository.Create(ctx, dto.CreatePaymentDto{
 		CorrelationId: message.CorrelationId,
 		Amount:        message.Amount,
+		RequestedAt:   message.RequestedAt,
 	})
 
 	if err != nil {

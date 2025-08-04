@@ -2,7 +2,9 @@ package redis_payment_repository
 
 import (
 	"context"
+	"encoding/json"
 	"payment-gateway/internal/domain/dto"
+	"payment-gateway/internal/domain/entity"
 	domain_repository "payment-gateway/internal/domain/repository"
 
 	"github.com/redis/go-redis/v9"
@@ -19,7 +21,11 @@ func NewPaymentsRepository(client *redis.Client) domain_repository.PaymentReposi
 }
 
 func (f *PaymentsRepository) Create(ctx context.Context, input dto.CreatePaymentDto) error {
-	response := f.client.Set(ctx, input.CorrelationId, input.Amount, 0)
+	entity := entity.NewPayment(input.CorrelationId, input.Amount, input.RequestedAt)
+
+	entityEncoded, _ := json.Marshal(entity)
+
+	response := f.client.Set(ctx, input.CorrelationId, entityEncoded, 0)
 
 	return response.Err()
 }
