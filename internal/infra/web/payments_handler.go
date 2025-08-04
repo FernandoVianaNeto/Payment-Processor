@@ -28,5 +28,20 @@ func (s *Server) CreatePaymentHandler(ctx *gin.Context) {
 }
 
 func (s *Server) GetSummaryHandler(ctx *gin.Context) {
-	ctx.Status(http.StatusOK)
+	var getSummaryRequest requests.GetSummaryRequet
+
+	if err := ctx.ShouldBindQuery(&getSummaryRequest); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid query"})
+	}
+
+	response, err := s.Usecases.GetPaymentsSummaryUsecase.Execute(ctx, dto.GetPaymentsSummaryDto{
+		From: getSummaryRequest.From,
+		To:   getSummaryRequest.To,
+	})
+
+	if err != nil {
+		ctx.JSON(http.StatusUnprocessableEntity, gin.H{"error": "Could not get payments summary"})
+	}
+
+	ctx.JSON(http.StatusOK, response)
 }

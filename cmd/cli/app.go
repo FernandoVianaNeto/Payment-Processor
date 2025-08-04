@@ -20,6 +20,7 @@ type Application struct {
 }
 type UseCases struct {
 	CreatePaymentRequestUsecase domain_payment_usecase.CreatePaymentRequestUsecaseInterface
+	GetPaymentsSummaryUsecase   domain_payment_usecase.GetPaymentsSummaryUsecaseInterface
 }
 
 type Repositories struct {
@@ -48,6 +49,7 @@ func NewApplication() *web.Server {
 	srv := web.NewServer(
 		ctx,
 		usecases.CreatePaymentRequestUsecase,
+		usecases.GetPaymentsSummaryUsecase,
 	)
 
 	return srv
@@ -70,8 +72,10 @@ func NewUseCases(
 	queue *natsclient.NatsClient,
 ) UseCases {
 	createPaymentRequestUsecase := payment_usecase.NewCreatePaymentRequestUsecase(paymentRepository, queue)
+	getPaymentsSummaryUsecase := payment_usecase.NewGetPaymentsSummaryUsecase(paymentRepository)
 
 	return UseCases{
 		CreatePaymentRequestUsecase: createPaymentRequestUsecase,
+		GetPaymentsSummaryUsecase:   getPaymentsSummaryUsecase,
 	}
 }

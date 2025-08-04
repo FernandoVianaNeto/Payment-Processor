@@ -2,7 +2,6 @@ package payment_usecase
 
 import (
 	"context"
-	"payment-gateway/internal/domain/adapters/queue"
 	"payment-gateway/internal/domain/dto"
 	domain_repository "payment-gateway/internal/domain/repository"
 	domain_response "payment-gateway/internal/domain/response"
@@ -11,16 +10,13 @@ import (
 
 type GetPaymentsSummaryUsecase struct {
 	PaymentRepository domain_repository.PaymentRepositoryInterface
-	Queue             queue.Client
 }
 
 func NewGetPaymentsSummaryUsecase(
 	paymentRepository domain_repository.PaymentRepositoryInterface,
-	queue queue.Client,
 ) domain_payment_usecase.GetPaymentsSummaryUsecaseInterface {
 	return &GetPaymentsSummaryUsecase{
 		PaymentRepository: paymentRepository,
-		Queue:             queue,
 	}
 }
 
