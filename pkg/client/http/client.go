@@ -37,14 +37,13 @@ type HTTPClient interface {
 
 var _ HTTPClient = &Client{}
 
-func NewBaseClient(baseUrl string, client *http.Client, config *configs.ApplicationConfig, headers ...OptionalHeaders) HTTPClient {
+func NewBaseClient(baseUrl string, client *http.Client, config *configs.ApplicationConfig, headers ...OptionalHeaders) *Client {
 	return &Client{
 		baseUrl: baseUrl,
 		client:  client,
 		headers: headers,
 	}
 }
-
 func (c *Client) SetHeaders(headers ...OptionalHeaders) {
 	c.headers = headers
 }

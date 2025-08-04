@@ -5,6 +5,6 @@ import (
 	"payment-gateway/internal/domain/dto"
 )
 
-type CreatePaymentUsecaseInterface interface {
+type CreatePaymentRequestUsecaseInterface interface {
 	Execute(ctx context.Context, dto dto.CreatePaymentDto) error
 }

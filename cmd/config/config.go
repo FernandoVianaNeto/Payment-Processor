@@ -9,9 +9,11 @@ import (
 )
 
 var (
-	ApplicationCfg *ApplicationConfig
-	NatsCfg        *NatsConfig
-	RedisCfg       *RedisConfig
+	ApplicationCfg                    *ApplicationConfig
+	NatsCfg                           *NatsConfig
+	RedisCfg                          *RedisConfig
+	PaymentProcessorDefaultClientCfg  *PaymentProcessorClientConfig
+	PaymentProcessorFallbackClientCfg *PaymentProcessorClientConfig
 )
 
 const (
@@ -30,9 +32,10 @@ type ApplicationConfig struct {
 }
 
 type NatsConfig struct {
-	Host     string
-	User     string
-	Password string
+	Host                 string
+	User                 string
+	Password             string
+	PaymentRequestsQueue string
 }
 
 type RedisConfig struct {
@@ -42,6 +45,10 @@ type RedisConfig struct {
 	Db            int
 	MinIddleConns int
 	PoolSize      int
+}
+
+type PaymentProcessorClientConfig struct {
+	BaseUri string
 }
 
 func initialize() {
@@ -55,6 +62,7 @@ func InitializeConfigs() {
 	initializeApplicationConfigs()
 	initializeNatsConfigs()
 	initializeRedisConfig()
+	initializeProcessorsPayment()
 }
 
 func getEnv(key string, defaultVal string) string {
@@ -90,9 +98,10 @@ func initializeApplicationConfigs() {
 func initializeNatsConfigs() {
 	if NatsCfg == nil {
 		NatsCfg = &NatsConfig{
-			Host:     getEnv("NATS_HOST", "nats://localhost:4222"),
-			User:     getEnv("NATS_USER", "root"),
-			Password: getEnv("NATS_PASSWORD", "password"),
+			Host:                 getEnv("NATS_HOST", "nats://localhost:4222"),
+			User:                 getEnv("NATS_USER", "root"),
+			Password:             getEnv("NATS_PASSWORD", "password"),
+			PaymentRequestsQueue: getEnv("NATS_PAYMENT_REQUEST_QUEUE", "payment_requests"),
 		}
 	}
 }
@@ -106,6 +115,20 @@ func initializeRedisConfig() {
 			Db:            getEnvAsInt("REDIS_DB", 0),
 			MinIddleConns: getEnvAsInt("REDIS_MIN_IDDLE_CONNS", 1),
 			PoolSize:      getEnvAsInt("REDIS_POOL_SIZE", 5),
+		}
+	}
+}
+
+func initializeProcessorsPayment() {
+	if PaymentProcessorDefaultClientCfg == nil {
+		PaymentProcessorDefaultClientCfg = &PaymentProcessorClientConfig{
+			BaseUri: getEnv("PROCESSOR_DEFAULT_BASE_URI", "http://127.0.0.1:8001"),
+		}
+	}
+
+	if PaymentProcessorFallbackClientCfg == nil {
+		PaymentProcessorFallbackClientCfg = &PaymentProcessorClientConfig{
+			BaseUri: getEnv("PROCESSOR_FALLBACK_BASE_URI", "http://127.0.0.1:8002"),
 		}
 	}
 }

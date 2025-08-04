@@ -1,20 +1,20 @@
 package entity
 
 type Payment struct {
-	CorrelationId string  `json:"correlation_id"`
-	CreatedAt     string  `json:"created_at"`
+	CorrelationId string  `json:"correlationId"`
+	RequestedAt   string  `json:"requestedAt"`
 	Amount        float64 `json:"amount"`
 }
 
 func NewPayment(
 	correlationId string,
-	createdAt string,
 	amount float64,
+	RequestedAt string,
 ) *Payment {
 	entity := &Payment{
 		CorrelationId: correlationId,
 		Amount:        amount,
-		CreatedAt:     createdAt,
+		RequestedAt:   RequestedAt,
 	}
 	return entity
 }

@@ -1,15 +1,20 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"os"
 	configs "payment-gateway/cmd/config"
+	payment_request_queue_consumer "payment-gateway/internal/infra/worker/payments"
+	natsclient "payment-gateway/pkg/nats"
 
 	"github.com/spf13/cobra"
 )
 
 func init() {
 	rootCmd.AddCommand(httpCmd)
+	rootCmd.AddCommand(paymentRequestsConsumerCmd)
+
 }
 
 var rootCmd = &cobra.Command{
@@ -42,26 +47,32 @@ var httpCmd = &cobra.Command{
 	},
 }
 
-// var workoutConsumerCmd = &cobra.Command{
-// 	Use:   "workout-consumer",
-// 	Short: "Initialize Workout Consumer",
-// 	Run: func(cmd *cobra.Command, args []string) {
-// 		configs.InitializeConfigs()
+var paymentRequestsConsumerCmd = &cobra.Command{
+	Use:   "payment-requests-consumer",
+	Short: "Initialize Payment Requests Consumer",
+	Run: func(cmd *cobra.Command, args []string) {
+		configs.InitializeConfigs()
 
-// 		ctx := context.Background()
+		ctx := context.Background()
 
-// 		client := natsclient.New(configs.NatsCfg.Host)
+		natsClient := natsclient.New(configs.NatsCfg.Host)
+		natsClient.Connect()
 
-// 		client.Connect()
+		workerInfra := NewWorker()
 
-// 		err := worker_workout.StartWorkoutConsumer(ctx, client, "workout_consumer")
+		err := payment_request_queue_consumer.StartPaymentRequestsConsumer(ctx, natsClient, "payment_requests_consumer", payment_request_queue_consumer.ConsumerInfra{
+			ProcessorPaymentDefault:  workerInfra.ProcessorPaymentDefault,
+			ProcessorPaymentFallback: workerInfra.ProcessorPaymentFallback,
+			PaymentRepository:        workerInfra.PaymentRepository,
+			Usecases:                 payment_request_queue_consumer.Usecases(workerInfra.Usecases),
+		})
 
-// 		if err != nil {
-// 			fmt.Fprintf(os.Stderr, "Failed to start workout consumer: %v\n", err)
-// 			os.Exit(1)
-// 			return
-// 		}
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to start payment_requests_consumer: %v\n", err)
+			os.Exit(1)
+			return
+		}
 
-// 		fmt.Println("Workout consumer started successfully")
-// 	},
-// }
+		fmt.Println("payment_requests_consumer started successfully")
+	},
+}
