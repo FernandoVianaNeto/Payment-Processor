@@ -11,6 +11,8 @@ import (
 	domain_repository "payment-gateway/internal/domain/repository"
 	domain_response "payment-gateway/internal/domain/response"
 	domain_payment_usecase "payment-gateway/internal/domain/usecase/payments"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 const MAX_AMOUNT_OF_RETRIES = 5
@@ -59,25 +61,13 @@ func (u *ProcessPaymentRequestUsecase) Execute(ctx context.Context, data []byte)
 func (u *ProcessPaymentRequestUsecase) processDefaultMessage(ctx context.Context, message dto.ProcessPaymentRequestDto) error {
 	log.Println("PROCESSING DEFAULT MESSAGE WITH CORRELATION ID: ", message.CorrelationId)
 
-	defaultHealthCheckResponse, err := u.ProcessPaymentDefaultAdapter.IsLive(ctx)
-
-	log.Println("DEFAULT HEALTH CHECK RESPONSE: ", defaultHealthCheckResponse)
-
-	err = u.failHealthCheck(defaultHealthCheckResponse, err, message)
-
-	if err != nil {
-		return err
-	}
-
 	input := processors.ProcessorClientInput{
 		CorrelationId: message.CorrelationId,
 		Amount:        message.Amount,
 		RequestedAt:   message.RequestedAt,
 	}
 
-	log.Println("EXECUTING DEFAULT PAYMENT: ", defaultHealthCheckResponse)
-
-	err = u.ProcessPaymentDefaultAdapter.ExecutePayment(ctx, input)
+	err := u.ProcessPaymentDefaultAdapter.ExecutePayment(ctx, input)
 
 	if err != nil {
 		newData, err := retryMessage(message)
@@ -85,9 +75,7 @@ func (u *ProcessPaymentRequestUsecase) processDefaultMessage(ctx context.Context
 		if err != nil {
 			log.Println("error processing default payment. Sending an retry message")
 
-			u.Queue.Publish(configs.NatsCfg.PaymentRequestsQueue, newData)
-
-			return err
+			return u.Queue.Publish(configs.NatsCfg.PaymentRequestsQueue, newData)
 		}
 
 		return err
@@ -112,17 +100,7 @@ func (u *ProcessPaymentRequestUsecase) processDefaultMessage(ctx context.Context
 
 func (u *ProcessPaymentRequestUsecase) processFallbackMessage(ctx context.Context, message dto.ProcessPaymentRequestDto) error {
 	log.Println("PROCESSING FALLBACK MESSAGE WITH CORRELATION ID: ", message.CorrelationId)
-	fallbackHealthCheckResponse, err := u.ProcessPaymentFallbackAdapter.IsLive(ctx)
-
-	log.Println("FALLBACK HEALTH CHECK RESPONSE: ", fallbackHealthCheckResponse)
-
-	err = u.failHealthCheck(fallbackHealthCheckResponse, err, message)
-
-	if err != nil {
-		return err
-	}
-
-	err = u.ProcessPaymentFallbackAdapter.ExecutePayment(ctx, processors.ProcessorClientInput{
+	err := u.ProcessPaymentFallbackAdapter.ExecutePayment(ctx, processors.ProcessorClientInput{
 		CorrelationId: message.CorrelationId,
 		Amount:        message.Amount,
 		RequestedAt:   message.RequestedAt,
@@ -175,6 +153,8 @@ func (u *ProcessPaymentRequestUsecase) failHealthCheck(healthCheckResponse *doma
 }
 
 func retryMessage(message dto.ProcessPaymentRequestDto) ([]byte, error) {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
 	newData, err := json.Marshal(dto.ProcessPaymentRequestDto{
 		CorrelationId: message.CorrelationId,
 		Amount:        message.Amount,

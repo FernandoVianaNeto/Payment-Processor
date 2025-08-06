@@ -2,12 +2,12 @@ package redis_payment_repository
 
 import (
 	"context"
-	"encoding/json"
 	"payment-gateway/internal/domain/dto"
 	"payment-gateway/internal/domain/entity"
 	domain_repository "payment-gateway/internal/domain/repository"
 	domain_response "payment-gateway/internal/domain/response"
 
+	jsoniter "github.com/json-iterator/go"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -22,6 +22,8 @@ func NewPaymentsRepository(client *redis.Client) domain_repository.PaymentReposi
 }
 
 func (f *PaymentsRepository) Create(ctx context.Context, input dto.CreatePaymentDto) error {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
 	entity := entity.NewPayment(input.CorrelationId, input.Amount, input.RequestedAt)
 
 	entityEncoded, _ := json.Marshal(entity)
