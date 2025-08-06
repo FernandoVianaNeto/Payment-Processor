@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"fmt"
 
 	configs "payment-gateway/cmd/config"
 	payment_usecase "payment-gateway/internal/application/usecase/payments"
@@ -31,9 +32,14 @@ func NewApplication() *web.Server {
 	ctx := context.Background()
 
 	queueClient := natsclient.New(configs.NatsCfg.Host)
-	queueClient.Connect()
+	err := queueClient.Connect()
 
-	// redisClient := redis_client.InitRedis()
+	if err != nil {
+		fmt.Println("❌ COULD NOT CONNECT WITH NATS:", err)
+		panic(err)
+	}
+
+	fmt.Println("✅ SUCCESSFULLY CONNECTED WITH NATS")
 
 	mongoConnectionInput := mongoPkg.MongoInput{
 		DSN:      configs.MongoCfg.Dsn,

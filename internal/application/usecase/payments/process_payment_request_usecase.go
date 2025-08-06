@@ -61,6 +61,8 @@ func (u *ProcessPaymentRequestUsecase) processDefaultMessage(ctx context.Context
 
 	defaultHealthCheckResponse, err := u.ProcessPaymentDefaultAdapter.IsLive(ctx)
 
+	log.Println("DEFAULT HEALTH CHECK RESPONSE: ", defaultHealthCheckResponse)
+
 	err = u.failHealthCheck(defaultHealthCheckResponse, err, message)
 
 	if err != nil {
@@ -72,6 +74,8 @@ func (u *ProcessPaymentRequestUsecase) processDefaultMessage(ctx context.Context
 		Amount:        message.Amount,
 		RequestedAt:   message.RequestedAt,
 	}
+
+	log.Println("EXECUTING DEFAULT PAYMENT: ", defaultHealthCheckResponse)
 
 	err = u.ProcessPaymentDefaultAdapter.ExecutePayment(ctx, input)
 
@@ -109,6 +113,8 @@ func (u *ProcessPaymentRequestUsecase) processDefaultMessage(ctx context.Context
 func (u *ProcessPaymentRequestUsecase) processFallbackMessage(ctx context.Context, message dto.ProcessPaymentRequestDto) error {
 	log.Println("PROCESSING FALLBACK MESSAGE WITH CORRELATION ID: ", message.CorrelationId)
 	fallbackHealthCheckResponse, err := u.ProcessPaymentFallbackAdapter.IsLive(ctx)
+
+	log.Println("FALLBACK HEALTH CHECK RESPONSE: ", fallbackHealthCheckResponse)
 
 	err = u.failHealthCheck(fallbackHealthCheckResponse, err, message)
 

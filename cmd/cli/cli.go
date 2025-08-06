@@ -6,7 +6,6 @@ import (
 	"os"
 	configs "payment-gateway/cmd/config"
 	payment_request_queue_consumer "payment-gateway/internal/infra/worker/payments"
-	natsclient "payment-gateway/pkg/nats"
 
 	"github.com/spf13/cobra"
 )
@@ -55,12 +54,9 @@ var paymentRequestsConsumerCmd = &cobra.Command{
 
 		ctx := context.Background()
 
-		natsClient := natsclient.New(configs.NatsCfg.Host)
-		natsClient.Connect()
-
 		workerInfra := NewWorker()
 
-		err := payment_request_queue_consumer.StartPaymentRequestsConsumer(ctx, natsClient, "payment_requests_consumer", payment_request_queue_consumer.ConsumerInfra{
+		err := payment_request_queue_consumer.StartPaymentRequestsConsumer(ctx, workerInfra.Queue, "payment_requests_consumer", payment_request_queue_consumer.ConsumerInfra{
 			ProcessorPaymentDefault:  workerInfra.ProcessorPaymentDefault,
 			ProcessorPaymentFallback: workerInfra.ProcessorPaymentFallback,
 			PaymentRepository:        workerInfra.PaymentRepository,

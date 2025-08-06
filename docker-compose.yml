@@ -1,67 +1,174 @@
 version: '3.8'
 
 services:
-  redis:
-    image: redis:7
-    container_name: redis
-    env_file:
-      - .env
+  load-balancer:
+    image: nginx:latest
+    container_name: load-balancer
+    networks:
+      - backend
+      - payment-processor
     ports:
-      - "6379:6379"
-    restart: always
-    
+      - "3000:80"
+    volumes:
+      - ./.setup/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - payment-gateway-api1
+      - payment-gateway-api2
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 30MB
+
+  payment-gateway-api1:
+    build:
+      context: .
+      dockerfile: .setup/build/Dockerfile
+    container_name: payment-gateway-api1
+    depends_on:
+      - mongo-db
+      - nats
+    command: ["/bin/application", "http"]
+    networks:
+      - backend
+    environment:
+      APP_ENV: local
+      APP_PORT: 3001
+      NATS_HOST: nats://nats:4222
+      NATS_USER:
+      NATS_PASSWORD:
+      NATS_PAYMENT_REQUEST_QUEUE: payment_requests
+      PROCESSOR_FALLBACK_BASE_URI: http://payment-processor-fallback:8080
+      PROCESSOR_DEFAULT_BASE_URI: http://payment-processor-default:8080
+      MONGO_PAYMENT_COLLECTION: payments
+      MONGO_DB: payment-gateway
+      MONGO_DSN: mongodb://mongo-db:27017
+    deploy:
+      resources:
+        limits:
+          cpus: "0.35"
+          memory: 70MB
+
+  payment-gateway-api2:
+    build:
+      context: .
+      dockerfile: .setup/build/Dockerfile
+    container_name: payment-gateway-api2
+    depends_on:
+      - mongo-db
+      - nats
+    command: ["/bin/application", "http"]
+    networks:
+      - backend
+    environment:
+      APP_ENV: local
+      APP_PORT: 3001
+      NATS_HOST: nats://nats:4222
+      NATS_USER:
+      NATS_PASSWORD:
+      NATS_PAYMENT_REQUEST_QUEUE: payment_requests
+      PROCESSOR_FALLBACK_BASE_URI: http://payment-processor-fallback:8080
+      PROCESSOR_DEFAULT_BASE_URI: http://payment-processor-default:8080
+      MONGO_PAYMENT_COLLECTION: payments
+      MONGO_DB: payment-gateway
+      MONGO_DSN: mongodb://mongo-db:27017
+    deploy:
+      resources:
+        limits:
+          cpus: "0.35"
+          memory: 70MB
+
+  worker1:
+    build:
+      context: .
+      dockerfile: .setup/build/Dockerfile
+    container_name: worker1
+    depends_on:
+      - mongo-db
+      - nats
+    command: ["/bin/application", "payment-requests-consumer"]
+    networks:
+      - backend
+      - payment-processor
+    environment:
+      APP_ENV: local
+      APP_PORT: 3001
+      NATS_HOST: nats://nats:4222
+      NATS_USER:
+      NATS_PASSWORD:
+      NATS_PAYMENT_REQUEST_QUEUE: payment_requests
+      PROCESSOR_FALLBACK_BASE_URI: http://payment-processor-fallback:8080
+      PROCESSOR_DEFAULT_BASE_URI: http://payment-processor-default:8080
+      MONGO_PAYMENT_COLLECTION: payments
+      MONGO_DB: payment-gateway
+      MONGO_DSN: mongodb://mongo-db:27017
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 40MB
+
+  worker2:
+    build:
+      context: .
+      dockerfile: .setup/build/Dockerfile
+    container_name: worker2
+    depends_on:
+      - mongo-db
+      - nats
+    command: ["/bin/application", "payment-requests-consumer"]
+    networks:
+      - backend
+      - payment-processor
+    environment:
+      APP_ENV: local
+      APP_PORT: 3001
+      NATS_HOST: nats://nats:4222
+      NATS_USER:
+      NATS_PASSWORD:
+      NATS_PAYMENT_REQUEST_QUEUE: payment_requests
+      PROCESSOR_FALLBACK_BASE_URI: http://payment-processor-fallback:8080
+      PROCESSOR_DEFAULT_BASE_URI: http://payment-processor-default:8080
+      MONGO_PAYMENT_COLLECTION: payments
+      MONGO_DB: payment-gateway
+      MONGO_DSN: mongodb://mongo-db:27017
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 40MB
+
+  mongo-db:
+    image: mongo:7
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - backend
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 80MB
+
   nats:
     image: nats:2.10
     container_name: nats
+    networks:
+      - backend
     ports:
-      - "4222:4222"     # Porta padrão para clientes
-      - "8222:8222"     # Porta de monitoramento (opcional)
+      - "4222:4222"
+      - "8222:8222"
     restart: always
     command: ["-p", "4222", "-m", "8222"]
-    # command: ["-p", "4222", "-m", "8222", "--user", "root", "--pass", "password"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.0"
+          memory: 20MB
 
-  mongo-db:
-    image: mongo
-    container_name: "payment-gateway-mongo"
-    ports:
-      - "27017:27017"
-
-  # payment-gateway1:
-  #   build:
-  #     context: .
-  #     dockerfile: .setup/build/Dockerfile
-  #   container_name: payment-gateway-1
-  #   env_file:
-  #     - .env
-  #   depends_on:
-  #     - redis
-  #   restart: always
-  #   command: ["/bin/application", "http"]
-
-  # payment-gateway2:
-  #   build:
-  #     context: .
-  #     dockerfile: .setup/build/Dockerfile
-  #   container_name: payment-gateway-2
-  #   env_file:
-  #     - .env
-  #   depends_on:
-  #     - redis
-  #   restart: always
-  #   command: ["/bin/application", "http"]
-
-  # nginx:
-  #   image: nginx:alpine
-  #   container_name: nginx-loadbalancer
-  #   ports:
-  #     - "3000:80"
-  #   volumes:
-  #     - ./.setup/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    # depends_on:
-      # - payment-gateway1
-      # - payment-gateway2
-    # restart: always
-
-# networks:
-#   default:
-#     name: app-network
+networks:
+  backend:
+    driver: bridge
+  payment-processor:
+    external: true

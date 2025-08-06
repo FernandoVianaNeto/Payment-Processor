@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	configs "payment-gateway/cmd/config"
 	"payment-gateway/internal/domain/adapters/queue"
 	"payment-gateway/internal/domain/dto"
 	"payment-gateway/internal/domain/entity"
@@ -30,7 +29,6 @@ func NewCreatePaymentRequestUsecase(
 
 func (u *CreatePaymentRequestUsecase) Execute(ctx context.Context, dto dto.CreatePaymentDto) error {
 	paymentAlreadyProcessed := u.PaymentRepository.AlreadyAdded(ctx, dto.CorrelationId)
-
 	if paymentAlreadyProcessed {
 		return errors.New("payment already processed")
 	}
@@ -39,14 +37,11 @@ func (u *CreatePaymentRequestUsecase) Execute(ctx context.Context, dto dto.Creat
 	requestedAt := now.Format(time.RFC3339)
 
 	message := entity.NewPayment(dto.CorrelationId, dto.Amount, requestedAt)
-
 	messageByte, err := json.Marshal(message)
-
 	if err != nil {
 		return err
 	}
 
-	err = u.Queue.Publish(configs.NatsCfg.PaymentRequestsQueue, messageByte)
-
+	err = u.Queue.Publish("payment_requests", messageByte)
 	return err
 }
