@@ -27,14 +27,14 @@ services:
     container_name: payment-gateway-api1
     depends_on:
       - mongo-db
-      - nats
+      - nats_worker_1
     command: ["/bin/application", "http"]
     networks:
       - backend
     environment:
       APP_ENV: local
       APP_PORT: 3001
-      NATS_HOST: nats://nats:4222
+      NATS_HOST: nats://nats_worker_1:4222
       NATS_USER:
       NATS_PASSWORD:
       NATS_PAYMENT_REQUEST_QUEUE: payment_requests
@@ -56,14 +56,14 @@ services:
     container_name: payment-gateway-api2
     depends_on:
       - mongo-db
-      - nats
+      - nats_worker_2
     command: ["/bin/application", "http"]
     networks:
       - backend
     environment:
       APP_ENV: local
       APP_PORT: 3001
-      NATS_HOST: nats://nats:4222
+      NATS_HOST: nats://nats_worker_2:4223
       NATS_USER:
       NATS_PASSWORD:
       NATS_PAYMENT_REQUEST_QUEUE: payment_requests
@@ -85,7 +85,7 @@ services:
     container_name: worker1
     depends_on:
       - mongo-db
-      - nats
+      - nats_worker_1
     command: ["/bin/application", "payment-requests-consumer"]
     networks:
       - backend
@@ -93,7 +93,7 @@ services:
     environment:
       APP_ENV: local
       APP_PORT: 3001
-      NATS_HOST: nats://nats:4222
+      NATS_HOST: nats://nats_worker_1:4222
       NATS_USER:
       NATS_PASSWORD:
       NATS_PAYMENT_REQUEST_QUEUE: payment_requests
@@ -115,7 +115,7 @@ services:
     container_name: worker2
     depends_on:
       - mongo-db
-      - nats
+      - nats_worker_2
     command: ["/bin/application", "payment-requests-consumer"]
     networks:
       - backend
@@ -123,7 +123,7 @@ services:
     environment:
       APP_ENV: local
       APP_PORT: 3001
-      NATS_HOST: nats://nats:4222
+      NATS_HOST: nats://nats_worker_2:4223
       NATS_USER:
       NATS_PASSWORD:
       NATS_PAYMENT_REQUEST_QUEUE: payment_requests
@@ -151,9 +151,9 @@ services:
           cpus: "0.2"
           memory: 80MB
 
-  nats:
+  nats_worker_1:
     image: nats:2.10
-    container_name: nats
+    container_name: nats_worker_1
     networks:
       - backend
     ports:
@@ -161,6 +161,22 @@ services:
       - "8222:8222"
     restart: always
     command: ["-p", "4222", "-m", "8222"]
+    deploy:
+      resources:
+        limits:
+          cpus: "0.0"
+          memory: 20MB
+    
+  nats_worker_2:
+    image: nats:2.10
+    container_name: nats_worker_2
+    networks:
+      - backend
+    ports:
+      - "4223:4223"
+      - "8223:8223"
+    restart: always
+    command: ["-p", "4223", "-m", "8223"]
     deploy:
       resources:
         limits:
