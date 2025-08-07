@@ -49,8 +49,6 @@ func NewWorker() ConsumerInfra {
 	queueClient := natsclient.New(configs.NatsCfg.Host)
 	queueClient.Connect()
 
-	// redisClient := redis_client.InitRedis()
-
 	mongoConnectionInput := mongoPkg.MongoInput{
 		DSN:      configs.MongoCfg.Dsn,
 		Database: configs.MongoCfg.Database,
@@ -102,7 +100,6 @@ func NewWorkerAdapters(
 
 func NewWorkerRepositories(
 	ctx context.Context,
-	// redisClient *redis.Client,
 	db *mongo.Database,
 ) Repositories {
 	paymentsRepository := mongo_infra.NewPaymentRepository(db)

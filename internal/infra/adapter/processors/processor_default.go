@@ -2,7 +2,6 @@ package processors
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"net/url"
@@ -10,6 +9,8 @@ import (
 	domain_repository "payment-gateway/internal/domain/repository"
 	domain_response "payment-gateway/internal/domain/response"
 	http_client "payment-gateway/pkg/client/http"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 type ProcessorDefaultClient struct {
@@ -28,6 +29,8 @@ func NewProcessorDefaultClient(
 }
 
 func (u *ProcessorDefaultClient) ExecutePayment(ctx context.Context, input processors.ProcessorClientInput) error {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
 	body, err := json.Marshal(input)
 
 	if err != nil {
@@ -44,6 +47,8 @@ func (u *ProcessorDefaultClient) ExecutePayment(ctx context.Context, input proce
 }
 
 func (u *ProcessorDefaultClient) IsLive(ctx context.Context) (*domain_response.HealthCheckResponse, error) {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
 	var response domain_response.HealthCheckResponse
 
 	responseByte, statusCode, err := u.Client.Get(ctx, "/payments/service-health", url.Values{})

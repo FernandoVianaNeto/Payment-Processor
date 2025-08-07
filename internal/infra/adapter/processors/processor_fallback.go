@@ -10,6 +10,8 @@ import (
 	domain_repository "payment-gateway/internal/domain/repository"
 	domain_response "payment-gateway/internal/domain/response"
 	http_client "payment-gateway/pkg/client/http"
+
+	jsoniter "github.com/json-iterator/go"
 )
 
 type ProcessorFallbackClient struct {
@@ -28,6 +30,8 @@ func NewProcessorFallbackClient(
 }
 
 func (u *ProcessorFallbackClient) ExecutePayment(ctx context.Context, input processors.ProcessorClientInput) error {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+
 	body, err := json.Marshal(input)
 
 	if err != nil {

@@ -11,7 +11,6 @@ import (
 var (
 	ApplicationCfg                    *ApplicationConfig
 	NatsCfg                           *NatsConfig
-	RedisCfg                          *RedisConfig
 	PaymentProcessorDefaultClientCfg  *PaymentProcessorClientConfig
 	PaymentProcessorFallbackClientCfg *PaymentProcessorClientConfig
 	MongoCfg                          *MongoConfig
@@ -39,15 +38,6 @@ type NatsConfig struct {
 	PaymentRequestsQueue string
 }
 
-type RedisConfig struct {
-	Host          string
-	Port          int
-	Password      string
-	Db            int
-	MinIddleConns int
-	PoolSize      int
-}
-
 type MongoConfig struct {
 	PaymentCollection string
 	Dsn               string
@@ -68,7 +58,6 @@ func InitializeConfigs() {
 	initialize()
 	initializeApplicationConfigs()
 	initializeNatsConfigs()
-	// initializeRedisConfig()
 	initializeProcessorsPayment()
 	initializeMongoConfig()
 }
@@ -113,19 +102,6 @@ func initializeNatsConfigs() {
 		}
 	}
 }
-
-// func initializeRedisConfig() {
-// 	if RedisCfg == nil {
-// 		RedisCfg = &RedisConfig{
-// 			Host:          getEnv("REDIS_HOST", "redis"),
-// 			Port:          getEnvAsInt("REDIS_PORT", 6379),
-// 			Password:      getEnv("REDIS_PASSWORD", "password"),
-// 			Db:            getEnvAsInt("REDIS_DB", 0),
-// 			MinIddleConns: getEnvAsInt("REDIS_MIN_IDDLE_CONNS", 1),
-// 			PoolSize:      getEnvAsInt("REDIS_POOL_SIZE", 5),
-// 		}
-// 	}
-// }
 
 func initializeMongoConfig() {
 	if MongoCfg == nil {

@@ -11,5 +11,6 @@ import (
 type PaymentRepositoryInterface interface {
 	Create(ctx context.Context, input dto.CreatePaymentDto) error
 	AlreadyAdded(ctx context.Context, correlationId string) bool
+	Delete(ctx context.Context, correlationId string) error
 	Summary(ctx context.Context, input dto.GetPaymentsSummaryDto) (*domain_response.PaymentSummaryResponse, error)
 }
