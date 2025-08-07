@@ -24,11 +24,9 @@ type ConsumerInfra struct {
 }
 
 func StartPaymentRequestsConsumer(ctx context.Context, client queue.Client, consumerName string, consumerInfra ConsumerInfra) error {
-	semaphore := semaphore.NewWeighted(int64(10))
+	semaphore := semaphore.NewWeighted(int64(7))
 
 	err := client.Subscribe(configs.NatsCfg.PaymentRequestsQueue, func(msg []byte) {
-		log.Printf("[payment-gateway-processor] Mensagem received: %s\n", string(msg))
-
 		if err := semaphore.Acquire(ctx, 1); err != nil {
 			log.Println("Could not acquire semaphore: ", err)
 		}

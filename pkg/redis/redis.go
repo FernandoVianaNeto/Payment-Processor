@@ -20,7 +20,7 @@ func InitRedis() *redis.Client {
 	addr := fmt.Sprintf("%s:%d", configs.RedisCfg.Host, 6379)
 
 	RDB = redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr: addr,
 		// Password:     configs.RedisCfg.Password,
 		// DB:           configs.RedisCfg.Db,
 		// MinIdleConns: configs.RedisCfg.MinIddleConns,

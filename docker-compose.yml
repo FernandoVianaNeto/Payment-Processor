@@ -8,7 +8,7 @@ services:
       - backend
       - payment-processor
     ports:
-      - "3000:80"
+      - "9999:80"
     volumes:
       - ./.setup/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
@@ -46,7 +46,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.35"
+          cpus: "0.20"
           memory: 70MB
 
   payment-gateway-api2:
@@ -75,7 +75,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.35"
+          cpus: "0.20"
           memory: 70MB
 
   worker1:
@@ -100,13 +100,15 @@ services:
       PROCESSOR_FALLBACK_BASE_URI: http://payment-processor-fallback:8080
       PROCESSOR_DEFAULT_BASE_URI: http://payment-processor-default:8080
       MONGO_PAYMENT_COLLECTION: payments
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       MONGO_DB: payment-gateway
       MONGO_DSN: mongodb://mongo-db:27017
     deploy:
       resources:
         limits:
-          cpus: "0.2"
-          memory: 40MB
+          cpus: "0.5"
+          memory: 80MB
 
   worker2:
     build:
@@ -130,26 +132,28 @@ services:
       PROCESSOR_FALLBACK_BASE_URI: http://payment-processor-fallback:8080
       PROCESSOR_DEFAULT_BASE_URI: http://payment-processor-default:8080
       MONGO_PAYMENT_COLLECTION: payments
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       MONGO_DB: payment-gateway
       MONGO_DSN: mongodb://mongo-db:27017
     deploy:
       resources:
         limits:
-          cpus: "0.2"
-          memory: 40MB
-
-  mongo-db:
-    image: mongo:7
-    container_name: mongo
-    ports:
-      - "27017:27017"
-    networks:
-      - backend
-    deploy:
-      resources:
-        limits:
-          cpus: "0.2"
+          cpus: "0.5"
           memory: 80MB
+
+  # mongo-db:
+  #   image: mongo:7
+  #   container_name: mongo
+  #   ports:
+  #     - "27017:27017"
+  #   networks:
+  #     - backend
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: "0.2"
+  #         memory: 80MB
 
   nats_worker_1:
     image: nats:2.10
@@ -182,14 +186,19 @@ services:
         limits:
           cpus: "0.0"
           memory: 20MB
-    
+          
   redis:
     image: redis:7.2
     ports:
       - "6379:6379"
     networks:
-      -backend
+      - backend
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 80MB
 
 networks:
   backend:

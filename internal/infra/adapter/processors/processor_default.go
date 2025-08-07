@@ -37,6 +37,10 @@ func (u *ProcessorDefaultClient) ExecutePayment(ctx context.Context, input proce
 	_, statusCode, err := u.Client.Post(ctx, "/payments", url.Values{}, body)
 
 	if statusCode != http.StatusOK || err != nil {
+		if err != nil {
+			return err
+		}
+
 		return errors.New("error processing payment")
 	}
 
