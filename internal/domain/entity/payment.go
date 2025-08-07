@@ -10,12 +10,10 @@ type Payment struct {
 func NewPayment(
 	correlationId string,
 	amount float64,
-	RequestedAt string,
 ) *Payment {
 	entity := &Payment{
 		CorrelationId: correlationId,
 		Amount:        amount,
-		RequestedAt:   RequestedAt,
 	}
 	return entity
 }

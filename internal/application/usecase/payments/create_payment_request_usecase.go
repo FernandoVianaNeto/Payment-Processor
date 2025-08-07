@@ -2,13 +2,11 @@ package payment_usecase
 
 import (
 	"context"
-	"errors"
 	"payment-gateway/internal/domain/adapters/queue"
 	"payment-gateway/internal/domain/dto"
 	"payment-gateway/internal/domain/entity"
 	domain_repository "payment-gateway/internal/domain/repository"
 	domain_payment_usecase "payment-gateway/internal/domain/usecase/payments"
-	"time"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -31,15 +29,7 @@ func NewCreatePaymentRequestUsecase(
 func (u *CreatePaymentRequestUsecase) Execute(ctx context.Context, dto dto.CreatePaymentDto) error {
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-	paymentAlreadyProcessed := u.PaymentRepository.AlreadyAdded(ctx, dto.CorrelationId)
-	if paymentAlreadyProcessed {
-		return errors.New("payment already processed")
-	}
-
-	now := time.Now().UTC()
-	requestedAt := now.Format(time.RFC3339)
-
-	message := entity.NewPayment(dto.CorrelationId, dto.Amount, requestedAt)
+	message := entity.NewPayment(dto.CorrelationId, dto.Amount)
 
 	messageByte, err := json.Marshal(message)
 	if err != nil {

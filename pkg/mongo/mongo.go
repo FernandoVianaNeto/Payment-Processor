@@ -22,8 +22,10 @@ func NewMongoDatabase(ctx context.Context, input MongoInput) *mongo.Database {
 		defer cancel()
 
 		options := options.Client()
-
 		options.ApplyURI(input.DSN)
+		options.SetMaxPoolSize(50)
+		options.SetMinPoolSize(5)
+		options.SetConnectTimeout(2 * time.Second)
 
 		client, err := mongo.Connect(ctx, options)
 

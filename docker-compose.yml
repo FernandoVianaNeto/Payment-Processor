@@ -46,7 +46,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.20"
+          cpus: "0.50"
           memory: 40MB
 
   payment-gateway-api2:
@@ -75,7 +75,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.20"
+          cpus: "0.50"
           memory: 40MB
 
   worker1:
@@ -149,7 +149,7 @@ services:
       resources:
         limits:
           cpus: "0.2"
-          memory: 140MB
+          memory: 80MB
 
   nats_worker_1:
     image: nats:2.10
@@ -165,7 +165,7 @@ services:
       resources:
         limits:
           cpus: "0.0"
-          memory: 50MB
+          memory: 40MB
     
   nats_worker_2:
     image: nats:2.10
@@ -181,7 +181,7 @@ services:
       resources:
         limits:
           cpus: "0.0"
-          memory: 50MB
+          memory: 40MB
 
 networks:
   backend:

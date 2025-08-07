@@ -2,15 +2,14 @@ package payment_usecase
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	configs "payment-gateway/cmd/config"
 	"payment-gateway/internal/domain/adapters/processors"
 	"payment-gateway/internal/domain/adapters/queue"
 	"payment-gateway/internal/domain/dto"
 	domain_repository "payment-gateway/internal/domain/repository"
-	domain_response "payment-gateway/internal/domain/response"
 	domain_payment_usecase "payment-gateway/internal/domain/usecase/payments"
+	"time"
 
 	jsoniter "github.com/json-iterator/go"
 )
@@ -39,6 +38,7 @@ func NewProcessPaymentRequestUsecase(
 }
 
 func (u *ProcessPaymentRequestUsecase) Execute(ctx context.Context, data []byte) error {
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	var message dto.ProcessPaymentRequestDto
 
 	err := json.Unmarshal(data, &message)
@@ -59,100 +59,74 @@ func (u *ProcessPaymentRequestUsecase) Execute(ctx context.Context, data []byte)
 }
 
 func (u *ProcessPaymentRequestUsecase) processDefaultMessage(ctx context.Context, message dto.ProcessPaymentRequestDto) error {
-	log.Println("PROCESSING DEFAULT MESSAGE WITH CORRELATION ID: ", message.CorrelationId)
+	now := time.Now().UTC()
+	requestedAt := now.Format(time.RFC3339)
 
 	input := processors.ProcessorClientInput{
 		CorrelationId: message.CorrelationId,
 		Amount:        message.Amount,
-		RequestedAt:   message.RequestedAt,
+		RequestedAt:   requestedAt,
 	}
-
 	err := u.ProcessPaymentDefaultAdapter.ExecutePayment(ctx, input)
 
-	if err != nil {
-		newData, err := retryMessage(message)
-
-		if err != nil {
-			log.Println("error processing default payment. Sending an retry message")
-
-			return u.Queue.Publish(configs.NatsCfg.PaymentRequestsQueue, newData)
-		}
-
-		return err
-	}
-
-	err = u.PaymentRepository.Create(ctx, dto.CreatePaymentDto{
-		CorrelationId:        message.CorrelationId,
-		Amount:               message.Amount,
-		RequestedAt:          message.RequestedAt,
-		TransactionProcessor: "default",
-	})
-
-	if err != nil {
-		log.Println("could not save payment into database when processing default payment. Sending retry message to database fallback...", err)
+	if err == nil {
+		err := u.PaymentRepository.Create(ctx, dto.CreatePaymentDto{
+			CorrelationId:        message.CorrelationId,
+			Amount:               message.Amount,
+			RequestedAt:          message.RequestedAt,
+			TransactionProcessor: "default",
+		})
 
 		return err
 	}
+	err = u.retryMessage(message)
 
-	log.Println("default payment processed successfully", err)
 	return err
 }
 
 func (u *ProcessPaymentRequestUsecase) processFallbackMessage(ctx context.Context, message dto.ProcessPaymentRequestDto) error {
-	log.Println("PROCESSING FALLBACK MESSAGE WITH CORRELATION ID: ", message.CorrelationId)
-	err := u.ProcessPaymentFallbackAdapter.ExecutePayment(ctx, processors.ProcessorClientInput{
-		CorrelationId: message.CorrelationId,
-		Amount:        message.Amount,
-		RequestedAt:   message.RequestedAt,
-	})
-
-	if err != nil {
-		newData, err := retryMessage(message)
-
-		if err != nil {
-			log.Println("error processing fallback payment. Sending an retry message")
-
-			u.Queue.Publish(configs.NatsCfg.PaymentRequestsQueue, newData)
-
-			return err
-		}
-	}
-
-	err = u.PaymentRepository.Create(ctx, dto.CreatePaymentDto{
+	err := u.PaymentRepository.Create(ctx, dto.CreatePaymentDto{
 		CorrelationId:        message.CorrelationId,
 		Amount:               message.Amount,
 		RequestedAt:          message.RequestedAt,
 		TransactionProcessor: "fallback",
 	})
-
 	if err != nil {
-		log.Println("could not save payment into database when processing default payment. Sending retry message to database fallback...")
+		err := u.retryMessage(message)
 		return err
 	}
-
-	log.Println("fallback payment processed successfully")
+	err = u.ProcessPaymentFallbackAdapter.ExecutePayment(ctx, processors.ProcessorClientInput{
+		CorrelationId: message.CorrelationId,
+		Amount:        message.Amount,
+		RequestedAt:   message.RequestedAt,
+	})
+	if err != nil {
+		u.PaymentRepository.Delete(ctx, message.CorrelationId)
+		err := u.retryMessage(message)
+		return err
+	}
 	return err
 }
 
-func (u *ProcessPaymentRequestUsecase) failHealthCheck(healthCheckResponse *domain_response.HealthCheckResponse, err error, message dto.ProcessPaymentRequestDto) error {
-	isFailing := &healthCheckResponse.Failing
+// func (u *ProcessPaymentRequestUsecase) failHealthCheck(healthCheckResponse *domain_response.HealthCheckResponse, err error, message dto.ProcessPaymentRequestDto) error {
+// 	isFailing := &healthCheckResponse.Failing
 
-	if err != nil || *isFailing {
-		newData, err := retryMessage(message)
+// 	if err != nil || healthCheckResponse == nil || *isFailing {
+// 		newData, err := retryMessage(message)
 
-		if err != nil {
-			log.Println("error getting health check. Sending an retry message")
+// 		if err != nil {
+// 			log.Println("error getting health check. Sending an retry message")
 
-			u.Queue.Publish(configs.NatsCfg.PaymentRequestsQueue, newData)
+// 			u.Queue.Publish(configs.NatsCfg.PaymentRequestsQueue, newData)
 
-			return err
-		}
-	}
+// 			return err
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func retryMessage(message dto.ProcessPaymentRequestDto) ([]byte, error) {
+func (u *ProcessPaymentRequestUsecase) retryMessage(message dto.ProcessPaymentRequestDto) error {
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 	newData, err := json.Marshal(dto.ProcessPaymentRequestDto{
@@ -164,8 +138,10 @@ func retryMessage(message dto.ProcessPaymentRequestDto) ([]byte, error) {
 
 	if err != nil {
 		log.Println("could not marshall new message: ", err)
-		return []byte{}, err
+		return err
 	}
 
-	return newData, err
+	err = u.Queue.Publish(configs.NatsCfg.PaymentRequestsQueue, newData)
+
+	return err
 }

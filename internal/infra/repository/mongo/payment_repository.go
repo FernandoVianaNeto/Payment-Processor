@@ -3,6 +3,7 @@ package mongo_infra
 import (
 	"context"
 	"errors"
+	"math"
 	configs "payment-gateway/cmd/config"
 	"payment-gateway/internal/domain/dto"
 	domain_repository "payment-gateway/internal/domain/repository"
@@ -117,15 +118,30 @@ func (f *PaymentRepository) Summary(ctx context.Context, input dto.GetPaymentsSu
 		case "default":
 			response.Default = domain_response.Summary{
 				TotalRequests: int(totalRequests),
-				TotalAmount:   totalAmount,
+				TotalAmount:   roundToFixed(totalAmount, 1),
 			}
 		case "fallback":
 			response.Fallback = domain_response.Summary{
 				TotalRequests: int(totalRequests),
-				TotalAmount:   totalAmount,
+				TotalAmount:   roundToFixed(totalAmount, 1),
 			}
 		}
 	}
 
 	return response, nil
+}
+
+func (f *PaymentRepository) Delete(ctx context.Context, correlationId string) error {
+	filter := bson.M{
+		"correlationId": correlationId,
+	}
+
+	_, err := f.collection.DeleteOne(ctx, filter)
+
+	return err
+}
+
+func roundToFixed(val float64, precision int) float64 {
+	factor := math.Pow(10, float64(precision))
+	return math.Round(val*factor) / factor
 }
