@@ -68,7 +68,7 @@ func InitializeConfigs() {
 	initialize()
 	initializeApplicationConfigs()
 	initializeNatsConfigs()
-	// initializeRedisConfig()
+	initializeRedisConfig()
 	initializeProcessorsPayment()
 	initializeMongoConfig()
 }
@@ -114,18 +114,18 @@ func initializeNatsConfigs() {
 	}
 }
 
-// func initializeRedisConfig() {
-// 	if RedisCfg == nil {
-// 		RedisCfg = &RedisConfig{
-// 			Host:          getEnv("REDIS_HOST", "redis"),
-// 			Port:          getEnvAsInt("REDIS_PORT", 6379),
-// 			Password:      getEnv("REDIS_PASSWORD", "password"),
-// 			Db:            getEnvAsInt("REDIS_DB", 0),
-// 			MinIddleConns: getEnvAsInt("REDIS_MIN_IDDLE_CONNS", 1),
-// 			PoolSize:      getEnvAsInt("REDIS_POOL_SIZE", 5),
-// 		}
-// 	}
-// }
+func initializeRedisConfig() {
+	if RedisCfg == nil {
+		RedisCfg = &RedisConfig{
+			Host:          getEnv("REDIS_HOST", "redis"),
+			Port:          getEnvAsInt("REDIS_PORT", 6379),
+			Password:      getEnv("REDIS_PASSWORD", "password"),
+			Db:            getEnvAsInt("REDIS_DB", 0),
+			MinIddleConns: getEnvAsInt("REDIS_MIN_IDDLE_CONNS", 1),
+			PoolSize:      getEnvAsInt("REDIS_POOL_SIZE", 5),
+		}
+	}
+}
 
 func initializeMongoConfig() {
 	if MongoCfg == nil {

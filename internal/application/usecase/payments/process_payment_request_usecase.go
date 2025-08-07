@@ -11,6 +11,7 @@ import (
 	domain_repository "payment-gateway/internal/domain/repository"
 	domain_response "payment-gateway/internal/domain/response"
 	domain_payment_usecase "payment-gateway/internal/domain/usecase/payments"
+	"time"
 )
 
 const MAX_AMOUNT_OF_RETRIES = 5
@@ -111,21 +112,23 @@ func (u *ProcessPaymentRequestUsecase) processDefaultMessage(ctx context.Context
 }
 
 func (u *ProcessPaymentRequestUsecase) processFallbackMessage(ctx context.Context, message dto.ProcessPaymentRequestDto) error {
-	log.Println("PROCESSING FALLBACK MESSAGE WITH CORRELATION ID: ", message.CorrelationId)
-	fallbackHealthCheckResponse, err := u.ProcessPaymentFallbackAdapter.IsLive(ctx)
+	// log.Println("PROCESSING FALLBACK MESSAGE WITH CORRELATION ID: ", message.CorrelationId)
+	// fallbackHealthCheckResponse, err := u.ProcessPaymentFallbackAdapter.IsLive(ctx)
 
-	log.Println("FALLBACK HEALTH CHECK RESPONSE: ", fallbackHealthCheckResponse)
+	// log.Println("FALLBACK HEALTH CHECK RESPONSE: ", fallbackHealthCheckResponse)
 
-	err = u.failHealthCheck(fallbackHealthCheckResponse, err, message)
+	// err = u.failHealthCheck(fallbackHealthCheckResponse, err, message)
 
-	if err != nil {
-		return err
-	}
+	// if err != nil {
+	// 	return err
+	// }
 
-	err = u.ProcessPaymentFallbackAdapter.ExecutePayment(ctx, processors.ProcessorClientInput{
+	now := time.Now().UTC()
+	requestedAt := now.Format(time.RFC3339)
+	err := u.ProcessPaymentFallbackAdapter.ExecutePayment(ctx, processors.ProcessorClientInput{
 		CorrelationId: message.CorrelationId,
 		Amount:        message.Amount,
-		RequestedAt:   message.RequestedAt,
+		RequestedAt:   requestedAt,
 	})
 
 	if err != nil {

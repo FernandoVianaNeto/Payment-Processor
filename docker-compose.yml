@@ -182,6 +182,14 @@ services:
         limits:
           cpus: "0.0"
           memory: 20MB
+    
+  redis:
+    image: redis:7.2
+    ports:
+      - "6379:6379"
+    networks:
+      -backend
+    restart: unless-stopped
 
 networks:
   backend:
