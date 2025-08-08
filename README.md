@@ -2,6 +2,7 @@
 
 A high-performance payment processing service built in Go, designed for the [Rinha de Backend 2025](https://github.com/zanfranceschi/rinha-de-backend-2025/blob/main/README.md).  
 The system handles payment requests, balance management, and transaction summaries, optimized for concurrency and scalability.
+This project has a resource limitation of 1.5 CPUs and 350 MB of memory shared across all services. During testing, the application was capable of handling 550 requests per second without failures and processing over 15,000 requests per minute.
 
 ## Features
 
