@@ -1,34 +1,66 @@
-# 💸 Smart Payment Router – High Performance Backend
+# Payment Processor
 
-This project is a **high-performance backend service** designed to receive payment requests and intelligently route them to one of two external payment processors. It ensures **cost efficiency**, **resilience**, and **speed**, even under unstable external conditions or heavy load.
+A high-performance payment processing service built in Go, designed for the [Rinha de Backend 2025](https://github.com/zanfranceschi/rinha-de-backend-2025/blob/main/README.md).  
+The system handles payment requests, balance management, and transaction summaries, optimized for concurrency and scalability.
 
-This implementation demonstrates architecture design, fault tolerance, performance optimization, and real-world backend problem-solving — making it ideal as a portfolio project.
+## Features
 
----
+- **Payment Creation** — Handles debit and credit operations.
+- **Balance Management** — Maintains an in-memory and persistent balance store.
+- **Transaction Summary** — Retrieves payment statistics for a given date range.
+- **MongoDB Integration** — Stores transactions with indexes for fast queries.
+- **Redis Integration** — Optional cache layer for performance optimization.
+- **Retry Pattern** — Uses NATS to retry failed payment processing automatically.
 
-## ✨ Features
+## Tech Stack
 
-- 🚦 **Smart routing** – Selects the processor with the lowest transaction fee  
-- 🔁 **Failover strategy** – Detects instability and reroutes to the available processor  
-- ⚡ **High throughput** – Optimized to handle thousands of concurrent requests  
-- 🔍 **Observability** – Health checks, structured logging, and metrics included  
-- 🧪 **Tested and verifiable** – Automated tests ensure system correctness
+- **Language**: Go
+- **Database**: MongoDB
+- **Cache**: Redis
+- **Messaging**: NATS
+- **Containerization**: Docker & Docker Compose
 
----
-
-## ⚙️ Tech Stack
-
-- **Golang** for fast, concurrent backend logic
-- **PostgreSQL** or equivalent as the transactional database
-- **Docker** and **Docker Compose** for containerization
-- **CI/CD** via GitHub Actions (or similar)
-- **Optional Frontend** built with **Vite** and deployed to Vercel
-
----
-
-## 📦 Running Locally
-
-Clone the repo and run:
+## Project Structure
 
 ```bash
-docker-compose up --build
+.
+├── cmd/
+│   ├── api/           # REST API entrypoint
+│   ├── worker/        # Worker that processes payments
+├── configs/           # JSON config files for consumers and services
+├── internal/
+│   ├── entities/      # Domain entities
+│   ├── repositories/  # MongoDB & Redis repositories
+│   ├── services/      # Business logic
+│   ├── usecases/      # Application use cases
+│   ├── queue/         # NATS queue integration
+├── test/              # Unit and integration tests
+└── docker-compose.yml
+
+## Installation & Setup
+
+Follow the steps below to run the project locally:
+
+### 1. Clone the repository
+```bash
+git clone <REPOSITORY_URL>
+cd payment-processor
+
+### 2. Build the application
+docker compose up --build
+
+The application will be available at:
+http://localhost:9999
+
+## Available Endpoints:
+
+curl --request POST \
+  --url http://localhost:9999/payments \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "correlationId": string,
+    "amount": float
+  }'
+
+curl --request GET \
+  --url http://localhost:9999/payments-summary
