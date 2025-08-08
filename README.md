@@ -29,13 +29,13 @@ The system handles payment requests, balance management, and transaction summari
 │   ├── worker/        # Worker that processes payments
 ├── configs/           # JSON config files for consumers and services
 ├── internal/
-│   ├── entities/      # Domain entities
-│   ├── repositories/  # MongoDB & Redis repositories
-│   ├── services/      # Business logic
-│   ├── usecases/      # Application use cases
-│   ├── queue/         # NATS queue integration
-├── test/              # Unit and integration tests
+│   ├── domain/        # Domain entities, usecase and adapters
+│   ├── application/   # Business rules implementation  
+│   ├── infrastructure/# MongoDB, Redis repositories, NATS and adapters implementation
 └── docker-compose.yml
+
+## Architecture
+<img width="1722" height="1098" alt="image" src="https://github.com/user-attachments/assets/11245d9f-2c5e-4136-a8e9-152162b7ddf0" />
 
 ## Installation & Setup
 
