@@ -3,7 +3,6 @@ package payment_usecase
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"payment-gateway/internal/domain/adapters/queue"
 	"payment-gateway/internal/domain/dto"
 	"payment-gateway/internal/domain/entity"
@@ -28,11 +27,6 @@ func NewCreatePaymentRequestUsecase(
 }
 
 func (u *CreatePaymentRequestUsecase) Execute(ctx context.Context, dto dto.CreatePaymentDto) error {
-	paymentAlreadyProcessed := u.PaymentRepository.AlreadyAdded(ctx, dto.CorrelationId)
-	if paymentAlreadyProcessed {
-		return errors.New("payment already processed")
-	}
-
 	now := time.Now().UTC()
 	requestedAt := now.Format(time.RFC3339)
 

@@ -46,8 +46,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.35"
-          memory: 70MB
+          cpus: "0.30"
+          memory: 30MB
 
   payment-gateway-api2:
     build:
@@ -75,8 +75,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.35"
-          memory: 70MB
+          cpus: "0.30"
+          memory: 30MB
 
   worker1:
     build:
@@ -105,7 +105,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.2"
+          cpus: "0.25"
           memory: 40MB
 
   worker2:
@@ -135,7 +135,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.2"
+          cpus: "0.25"
           memory: 40MB
 
   mongo-db:
@@ -149,7 +149,7 @@ services:
       resources:
         limits:
           cpus: "0.2"
-          memory: 80MB
+          memory: 200MB
 
   nats_worker_1:
     image: nats:2.10
